@@ -2,14 +2,12 @@ package org.nilennoct.view;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
+import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.UIController;
 
 /**
@@ -59,6 +57,7 @@ public class MainShell {
 			}
 		}
 
+		NetworkController.getInstance().finalize();
 		display.dispose();
 	}
 

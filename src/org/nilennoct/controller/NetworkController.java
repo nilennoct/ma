@@ -7,7 +7,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.nilennoct.controller.thread.ExploreThread;
 import org.nilennoct.controller.thread.FairyThread;
 import org.nilennoct.controller.thread.LoginThread;
-import org.nilennoct.model.DataTable;
 import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
 import org.nilennoct.model.UserInfo;
@@ -16,9 +15,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -78,6 +75,20 @@ public class NetworkController {
 	}
 
 	public NetworkController() {}
+
+	@Override
+	public void finalize() {
+		System.out.println("NC: finalize()");
+		if (fairyThread != null) {
+			fairyThread.interrupt();
+		}
+		if (exploreThread != null) {
+			exploreThread.interrupt();
+		}
+		if (loginThread != null) {
+			loginThread.interrupt();
+		}
+	}
 
 	public static NetworkController getInstance() {
 		if (nc == null) {
