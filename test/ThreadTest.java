@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -16,7 +18,14 @@ public class ThreadTest {
 	}
 
 	public static void main(String[] args) {
-		ThreadTest tt = new ThreadTest();
+//		ThreadTest tt = new ThreadTest();
+		ArrayList<String> al = new ArrayList<String>();
+		al.add("123");
+		System.out.println(al);
+		al.remove("321");
+		System.out.println(al);
+		al.remove("123");
+		System.out.println(al);
 	}
 }
 

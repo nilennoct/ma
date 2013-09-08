@@ -56,6 +56,7 @@ public class NetworkController {
 	public String floorID = "";
 	int floorIndex = 0;
 	ArrayList<String> attackedFairyList = new ArrayList<String>();
+	ArrayList<String> failedFairyList = new ArrayList<String>();
 
 	public int minAP = 6;
 	public int minBC = 2;
@@ -1070,19 +1071,22 @@ public class NetworkController {
 					sid = fairyEvent.get("serial_id");
 					uid = fairyEvent.get("user_id");
 					fairyID = sid + "_" + uid;
-					if ( ! attackedFairyList.contains(fairyID) && userInfo.bc_current >= minBC) {
+					if (userInfo.bc_current >= minBC && ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID))) {
 						while (true) {
 							if (++count > 3) {
+								failedFairyList.add(fairyID);
 								break;
 							}
 							else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.get("name"))) {
 								fairyselect();
-								tmpFairyList.add(fairyID);
+								failedFairyList.remove(fairyID);
 								break;
 							}
 							Thread.sleep(5000);
 						}
 					}
+
+					tmpFairyList.add(fairyID);
 				}
 			}
 //			attackedFairyList.clear();
