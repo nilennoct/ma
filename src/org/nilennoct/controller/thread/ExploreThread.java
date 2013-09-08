@@ -12,7 +12,7 @@ import java.util.Random;
  * Time: 下午8:03
  */
 public class ExploreThread extends Thread {
-	NetworkController nc = null;
+	final NetworkController nc;
 
 	boolean running = false;
 	boolean interrupted = false;
@@ -28,10 +28,6 @@ public class ExploreThread extends Thread {
 //		running = true;
 //		super.start();
 //	}
-
-	public void end() {
-		running = false;
-	}
 
 	public void run() {
 //		Random random = new Random();
@@ -56,19 +52,23 @@ public class ExploreThread extends Thread {
 
 				String floorID;
 
-				while (nc.userInfo.ap_current >= nc.minAP) {
+				running = running || nc.userInfo.ap_current >= nc.startAP;
+
+				while (running) {
 					System.out.println(NetworkController.state);
 					if (NetworkController.state != StateEnum.AUTOEXPLORE) {
 						interrupted = true;
 						break;
 					}
+
 					interrupted = false;
 					floorID = nc.exploreAuto();
+
+					running = nc.userInfo.ap_current >= nc.minAP;
 
 					sleep(nc.exploreInterval);    // explore interval(ms)
 
 					if (nc.nextArea && "chArea".equals(floorID)) {
-						// TODO change area
 						nc.areaAutoNext().floorAutoNext().get_floorAuto();
 
 					}
@@ -78,10 +78,10 @@ public class ExploreThread extends Thread {
 					}
 				}
 
-				if ( ! interrupted) {
-					sleep((nc.minAP - nc.userInfo.ap_current) * 180000);
+
+				if ( ! interrupted || ! running) {
+					sleep((nc.startAP - nc.userInfo.ap_current) * 180000);
 					nc.updateAPBC();
-//					sleep(10000);
 				}
 			}
 			catch (InterruptedException e) {
@@ -90,7 +90,7 @@ public class ExploreThread extends Thread {
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
-							e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+							e1.printStackTrace();
 						}
 					}
 				}

@@ -59,6 +59,7 @@ public class NetworkController {
 	ArrayList<String> failedFairyList = new ArrayList<String>();
 
 	public int minAP = 6;
+	public int startAP = 60;
 	public int minBC = 2;
 	public boolean nextArea = false;
 	public int minAreaID = 1000;

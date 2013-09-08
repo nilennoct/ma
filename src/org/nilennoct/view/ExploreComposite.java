@@ -68,6 +68,12 @@ public class ExploreComposite extends Composite {
 		minAPText.setText("6");
 		minAPText.setLayoutData(textGD);
 
+		Label startAPLabel = new Label(rightComposite, SWT.CENTER);
+		startAPLabel.setText("Start AP: ");
+		final Text startAPText = new Text(rightComposite, SWT.BORDER);
+		startAPText.setText("60");
+		startAPText.setLayoutData(textGD);
+
 		Label minAIDLabel = new Label(rightComposite, SWT.CENTER);
 		minAIDLabel.setText("Min AreaID: ");
 		final Text minAIDText = new Text(rightComposite, SWT.BORDER);
@@ -176,10 +182,22 @@ public class ExploreComposite extends Composite {
 					nc.minAP = 6;
 				}
 				try {
+					nc.startAP = Integer.parseInt(startAPText.getText());
+				}
+				catch (Exception e) {
+					nc.startAP = 60;
+				}
+				try {
 					nc.exploreInterval = Integer.parseInt(exploreIntervalText.getText()) * 1000;
 				}
 				catch (Exception e) {
 					nc.exploreInterval = 5000;
+				}
+				try {
+					nc.minAreaID = Integer.parseInt(minAIDText.getText());
+				}
+				catch (Exception e) {
+					nc.minAreaID = 1000;
 				}
 				NetworkController.exploreThread = new ExploreThread(nc);
 				NetworkController.exploreThread.start();
