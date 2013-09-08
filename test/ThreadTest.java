@@ -24,6 +24,8 @@ public class ThreadTest {
 		System.out.println(al);
 		al.remove("321");
 		System.out.println(al);
+		al.add("123");
+		System.out.println(al);
 		al.remove("123");
 		System.out.println(al);
 	}

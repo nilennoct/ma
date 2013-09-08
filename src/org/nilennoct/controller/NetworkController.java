@@ -1074,7 +1074,8 @@ public class NetworkController {
 					if (userInfo.bc_current >= minBC && ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID))) {
 						while (true) {
 							if (++count > 3) {
-								failedFairyList.add(fairyID);
+								if ( ! failedFairyList.contains(fairyID))
+									failedFairyList.add(fairyID);
 								break;
 							}
 							else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.get("name"))) {
