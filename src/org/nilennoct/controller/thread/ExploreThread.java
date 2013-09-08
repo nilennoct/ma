@@ -1,0 +1,104 @@
+package org.nilennoct.controller.thread;
+
+import org.nilennoct.controller.NetworkController;
+import org.nilennoct.controller.StateEnum;
+
+import java.util.Random;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: Neo
+ * Date: 13-9-6
+ * Time: 下午8:03
+ */
+public class ExploreThread extends Thread {
+	NetworkController nc = null;
+
+	boolean running = false;
+	boolean interrupted = false;
+
+	public ExploreThread(NetworkController nc) {
+		super("ExploreThread");
+//		super();
+		this.nc = nc;
+		System.out.println("new ExploreThread()");
+	}
+
+//	public synchronized void start() {
+//		running = true;
+//		super.start();
+//	}
+
+	public void end() {
+		running = false;
+	}
+
+	public void run() {
+//		Random random = new Random();
+		while (true) {
+			System.out.println("ExploreThread start");
+			try {
+				while (NetworkController.state == StateEnum.AUTOFAIRY) {
+					System.out.println(NetworkController.state);
+					System.out.println("Wait for fairy");
+					sleep(5000);
+				}
+				System.out.println(NetworkController.state);
+				if (NetworkController.state != StateEnum.GETFLOOR && NetworkController.state != StateEnum.AUTOEXPLORE) {
+					if(NetworkController.state != StateEnum.MAIN) {
+						nc.mainmenuAuto();
+					}
+					nc.areaAuto();
+					nc.floorAuto();
+					nc.get_floorAuto();
+				}
+				NetworkController.setState(StateEnum.AUTOEXPLORE);
+
+				String floorID;
+
+				while (nc.userInfo.ap_current >= nc.minAP) {
+					System.out.println(NetworkController.state);
+					if (NetworkController.state != StateEnum.AUTOEXPLORE) {
+						interrupted = true;
+						break;
+					}
+					interrupted = false;
+					floorID = nc.exploreAuto();
+
+					sleep(nc.exploreInterval);    // explore interval(ms)
+
+					if (nc.nextArea && "chArea".equals(floorID)) {
+						// TODO change area
+						nc.areaAutoNext().floorAutoNext().get_floorAuto();
+
+					}
+					else if (nc.nextFloor && !nc.floorID.equals(floorID)) {
+						nc.floorID = floorID;
+						nc.get_floorAuto();
+					}
+				}
+
+				if ( ! interrupted) {
+					sleep((nc.minAP - nc.userInfo.ap_current) * 180000);
+					nc.updateAPBC();
+//					sleep(10000);
+				}
+			}
+			catch (InterruptedException e) {
+				if (NetworkController.state == StateEnum.LOGOUT) {
+					synchronized (nc) {
+						try {
+							nc.wait();
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+						}
+					}
+				}
+				else {
+					System.out.println("ExploreThread end.");
+					return;
+				}
+			}
+		}
+	}
+}

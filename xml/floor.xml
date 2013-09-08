@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><response><header><error><code>0</code></error><session_id>6k8b8sol7kot7j7gbo7v5qqrq6</session_id><revision><card_rev>174</card_rev><boss_rev>173</boss_rev><item_rev>173</item_rev><card_category_rev>174</card_category_rev><gacha_rev>175</gacha_rev><privilege_rev>173</privilege_rev><combo_rev>173</combo_rev><eventbanner_rev>175</eventbanner_rev><resource_rev><revision>173</revision><filename>res</filename></resource_rev><resource_rev><revision>148</revision><filename>sound</filename></resource_rev><resource_rev><revision>173</revision><filename>advbg</filename></resource_rev><resource_rev><revision>148</revision><filename>cmpsheet</filename></resource_rev><resource_rev><revision>175</revision><filename>gacha</filename></resource_rev><resource_rev><revision>148</revision><filename>privilege</filename></resource_rev><resource_rev><revision>175</revision><filename>eventbanner</filename></resource_rev></revision><lock_unlock><scenario_voice>0</scenario_voice></lock_unlock></header>
+
+<body>
+<exploration_floor>
+	<area_id>1</area_id>
+	<boss_down>0</boss_down>
+	<floor_info_list>
+		<floor_info>
+			<id>1</id>
+			<type>0</type>
+			<progress>0</progress>
+			<cost>1</cost>
+			<boss_id>0</boss_id>
+			<found_item_list>
+				<found_item>
+					<type>1</type>
+					<unlock>0</unlock>
+					<user_card>
+						<serial_id>18</serial_id>
+						<master_card_id>18</master_card_id>
+						<holography>0</holography>
+						<hp>860</hp>
+						<power>920</power>
+						<critical>0</critical>
+						<lv>1</lv>
+						<lv_max>5</lv_max>
+						<exp>0</exp>
+						<max_exp>760</max_exp>
+						<next_exp>100</next_exp>
+						<exp_diff>100</exp_diff>
+						<exp_per>0</exp_per>
+						<sale_price>80</sale_price>
+						<material_price>300</material_price>
+						<evolution_price>100</evolution_price>
+						<plus_limit_count></plus_limit_count>
+						<limit_over>0</limit_over>
+					</user_card>
+				</found_item>
+				<found_item><type>1</type><unlock>0</unlock><user_card><serial_id>65</serial_id><master_card_id>65</master_card_id><holography>0</holography><hp>660</hp><power>450</power><critical>0</critical><lv>1</lv><lv_max>10</lv_max><exp>0</exp><max_exp>3060</max_exp><next_exp>100</next_exp><exp_diff>100</exp_diff><exp_per>0</exp_per><sale_price>80</sale_price><material_price>300</material_price><evolution_price>100</evolution_price><plus_limit_count></plus_limit_count><limit_over>0</limit_over></user_card></found_item></found_item_list>
+			</floor_info>
+		</floor_info_list>
+	</exploration_floor>
+</body>
+</response>
