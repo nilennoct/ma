@@ -1,12 +1,14 @@
-import org.nilennoct.model.DataTable;
+import org.nilennoct.model.FairyEvent;
+import org.nilennoct.model.FairyInfo;
+import org.nilennoct.model.UserInfo;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
-import java.util.Hashtable;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,8 +23,8 @@ public class XMLTest {
 			Document doc = parseXML(xmlString);
 			int fariy = doc.getElementsByTagName("fairy").getLength();
 			System.out.println(fariy);
-			DataTable fairyInfo = getFairyInfo(doc);
-			DataTable userInfo = getUserInfo(doc);
+			FairyInfo fairyInfo = getFairyInfo(doc);
+			UserInfo userInfo = getUserInfo(doc);
 			System.out.println(fairyInfo);
 			System.out.println(userInfo);
 		}
@@ -56,27 +58,50 @@ public class XMLTest {
 		return "";
 	}
 
-	public static DataTable getUserInfo(Document doc) {
-		DataTable userInfo = new DataTable(3);
+	public static UserInfo getUserInfo(Document doc) {
+		UserInfo userInfo = new UserInfo();
 		Node user = doc.getElementsByTagName("your_data").item(0);
-		userInfo.put("name", getNodeValue(user, "name"));
-		userInfo.put("town_level", getNodeValue(user, "town_level"));
+
+		userInfo.name = getNodeValue(user, "name");
+		userInfo.town_level = getNodeValue(user, "town_level");
 		user = doc.getElementsByTagName("ap").item(0);
-		userInfo.put("ap_current", getNodeValue(user, "current"));
-		userInfo.put("ap_max", getNodeValue(user, "max"));
+		userInfo.ap_current = Integer.parseInt(getNodeValue(user, "current"));
+		userInfo.ap_max = Integer.parseInt(getNodeValue(user, "max"));
 		user = doc.getElementsByTagName("bc").item(0);
-		userInfo.put("bc_current", getNodeValue(user, "current"));
-		userInfo.put("bc_max", getNodeValue(user, "max"));
+		userInfo.bc_current = Integer.parseInt(getNodeValue(user, "current"));
+		userInfo.bc_max = Integer.parseInt(getNodeValue(user, "max"));
 
 		return userInfo;
 	}
 
-	public static DataTable getFairyInfo(Document doc) {
-		DataTable fairyInfo = new DataTable(3);
+	public static FairyInfo getFairyInfo(Document doc) {
+		FairyInfo fairyInfo = new FairyInfo();
 		Node fairy = doc.getElementsByTagName("fairy").item(0);
-		fairyInfo.put("master_boss_id", getNodeValue(fairy, "master_boss_id"));
-		fairyInfo.put("name", getNodeValue(fairy, "name"));
-		fairyInfo.put("lv", getNodeValue(fairy, "lv"));
+		fairyInfo.serial_id = getNodeValue(fairy, "serial_id");
+		fairyInfo.discoverer_id = getNodeValue(fairy, "discoverer_id");
+		fairyInfo.master_boss_id = getNodeValue(fairy, "master_boss_id");
+		fairyInfo.lv = getNodeValue(fairy, "lv");
+		fairyInfo.name = getNodeValue(fairy, "name") + " Lv." + fairyInfo.lv;
+
 		return fairyInfo;
+	}
+
+	public static FairyEvent getFairyEvent(Element fairy_event) {
+		String put_down = fairy_event.getElementsByTagName("put_down").item(0).getTextContent();
+//		System.out.println("put_down: " + put_down);
+		if ( ! put_down.equals("1")) {
+			return null;
+		}
+
+		FairyEvent fairyEvent = new FairyEvent();
+
+		fairyEvent.user_id = ((Element) fairy_event.getElementsByTagName("user").item(0)).getElementsByTagName("id").item(0).getTextContent();
+		Element fairy = (Element) fairy_event.getElementsByTagName("fairy").item(0);
+		fairyEvent.serial_id = fairy.getElementsByTagName("serial_id").item(0).getTextContent();
+		fairyEvent.name = fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairy.getElementsByTagName("lv").item(0).getTextContent();
+		fairyEvent.start_time = fairy_event.getElementsByTagName("start_time").item(0).getTextContent();
+		fairyEvent.put_down = put_down;
+
+		return fairyEvent;
 	}
 }

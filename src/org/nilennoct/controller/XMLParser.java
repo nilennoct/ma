@@ -1,6 +1,5 @@
 package org.nilennoct.controller;
 
-import org.nilennoct.model.DataTable;
 import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
 import org.nilennoct.model.UserInfo;
@@ -13,7 +12,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 /**
  * Created with IntelliJ IDEA.

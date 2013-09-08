@@ -16,15 +16,15 @@ import org.nilennoct.controller.thread.ExploreThread;
  * Time: 下午5:00
  */
 public class ExploreComposite extends Composite {
-	private NetworkController nc = NetworkController.getInstance();
+	private final NetworkController nc = NetworkController.getInstance();
 
 	private Table areaTable = null;
 	private Table floorTable = null;
-	private String[] areaColumnTitle = new String[] {"ID", "Name", "Progress"};
-	private String[] floorColumnTitle = new String[] {"ID", "Progress", "Cost"};
+	private final String[] areaColumnTitle = new String[] {"ID", "Name", "Progress"};
+	private final String[] floorColumnTitle = new String[] {"ID", "Progress", "Cost"};
 
-	Button autoExplore;
-	Button stopExplore;
+	final Button autoExplore;
+	final Button stopExplore;
 
 	public ExploreComposite(Composite parent) {
 		super(parent, SWT.NONE);
@@ -246,13 +246,4 @@ public class ExploreComposite extends Composite {
 		return floorTable.getItem(floorIndex) != null;
 	}
 
-	public void resetButtons() {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				autoExplore.setEnabled(true);
-				stopExplore.setEnabled(false);
-			}
-		});
-	}
 }

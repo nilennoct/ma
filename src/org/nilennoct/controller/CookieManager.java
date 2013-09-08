@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 上午1:09
  */
 public class CookieManager {
-	private Map<String, Map<String, Map<String, String>>> store = new ConcurrentHashMap<String, Map<String, Map<String, String>>>();;
+	private Map<String, Map<String, Map<String, String>>> store = new ConcurrentHashMap<String, Map<String, Map<String, String>>>();
 
 	private static final String SET_COOKIE = "Set-Cookie";
 	private static final String COOKIE_VALUE_DELIMITER = ";";
@@ -28,7 +28,7 @@ public class CookieManager {
 	private static final char NAME_VALUE_SEPARATOR = '=';
 	private static final char DOT = '.';
 
-	private DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);;
+	private DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
 
 	public CookieManager() {
 	}
@@ -46,7 +46,7 @@ public class CookieManager {
 	 * @throws java.io.IOException
 	 *             Thrown if conn is not open.
 	 */
-	public void storeCookies(URLConnection conn) throws IOException {
+	public void storeCookies(URLConnection conn) {
 
 		// let's determine the domain from where these cookies are being sent
 		String domain = getDomainFromHost(conn.getURL().getHost());
@@ -168,16 +168,7 @@ public class CookieManager {
 	}
 
 	private boolean comparePaths(String cookiePath, String targetPath) {
-		if (cookiePath == null) {
-			return true;
-		} else if (cookiePath.equals("/")) {
-			return true;
-		} else if (targetPath.regionMatches(0, cookiePath, 0, cookiePath
-				.length())) {
-			return true;
-		} else {
-			return false;
-		}
+		return cookiePath == null || cookiePath.equals("/") || targetPath.regionMatches(0, cookiePath, 0, cookiePath.length());
 
 	}
 

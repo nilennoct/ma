@@ -6,7 +6,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TabFolder;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.UIController;
 
@@ -35,7 +34,7 @@ public class MainShell {
 		GridData fillBothGD = new GridData(GridData.FILL, GridData.FILL, true, true);
 		sashForm.setLayoutData(fillBothGD);
 //		Composite loginComposite = new LoginComposite(shell);
-		TabFolder controlTabFoler = new ControlTabFolder(sashForm);
+		new ControlTabFolder(sashForm);
 //		controlTabFoler.setLayoutData(fillBothGD);
 
 		OutputComposite outputComposite = new OutputComposite(sashForm);
@@ -57,6 +56,7 @@ public class MainShell {
 			}
 		}
 
+		//noinspection FinalizeCalledExplicitly
 		NetworkController.getInstance().finalize();
 		display.dispose();
 	}

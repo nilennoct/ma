@@ -14,15 +14,15 @@ import org.nilennoct.controller.thread.FairyThread;
  * Time: 下午3:49
  */
 public class FairyComposite extends Composite {
-	private NetworkController nc = NetworkController.getInstance();
+	private final NetworkController nc = NetworkController.getInstance();
 
 	private Table fairyTable = null;
 	private Table attackedTable = null;
-	private String[] fairyColumnTitle = new String[] {"SID", "Name", "Owner"};
-	private String[] attackedColumnTitle = new String[] {"SID", "Name", "Owner"};
+	private final String[] fairyColumnTitle = new String[] {"SID", "Name", "Owner"};
+	private final String[] attackedColumnTitle = new String[] {"SID", "Name", "Owner"};
 
-	Button start;
-	Button stop;
+	private final Button start;
+	private final Button stop;
 
 	public FairyComposite(Composite parent) {
 		super(parent, SWT.NONE);
@@ -165,13 +165,4 @@ public class FairyComposite extends Composite {
 		}
 	}
 
-	public void resetButtons() {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				start.setEnabled(true);
-				stop.setEnabled(false);
-			}
-		});
-	}
 }

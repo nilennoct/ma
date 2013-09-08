@@ -10,7 +10,7 @@ import org.nilennoct.controller.StateEnum;
  * Time: 下午8:04
  */
 public class FairyThread extends Thread {
-	NetworkController nc = null;
+	private final NetworkController nc;
 
 	public FairyThread(NetworkController nc) {
 		super("FairyThread");
@@ -41,7 +41,7 @@ public class FairyThread extends Thread {
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
-							e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+							e1.printStackTrace();
 						}
 					}
 				}

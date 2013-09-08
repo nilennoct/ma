@@ -3,8 +3,6 @@ package org.nilennoct.controller.thread;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.StateEnum;
 
-import java.util.Random;
-
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -12,10 +10,10 @@ import java.util.Random;
  * Time: 下午8:03
  */
 public class ExploreThread extends Thread {
-	final NetworkController nc;
+	private final NetworkController nc;
 
-	boolean running = false;
-	boolean interrupted = false;
+	private boolean running = false;
+	private boolean interrupted = false;
 
 	public ExploreThread(NetworkController nc) {
 		super("ExploreThread");
@@ -29,6 +27,7 @@ public class ExploreThread extends Thread {
 //		super.start();
 //	}
 
+	@SuppressWarnings("ConstantConditions")
 	public void run() {
 //		Random random = new Random();
 		while (true) {

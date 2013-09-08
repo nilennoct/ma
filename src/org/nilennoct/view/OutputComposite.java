@@ -5,7 +5,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,7 +13,7 @@ import org.eclipse.swt.widgets.Text;
  * Time: 下午5:02
  */
 public class OutputComposite extends Composite {
-	public List output;
+	public final List output;
 
 	public OutputComposite(Composite parent) {
 		super(parent, SWT.NONE);

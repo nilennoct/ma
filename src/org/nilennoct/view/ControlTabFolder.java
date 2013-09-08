@@ -12,7 +12,7 @@ import org.nilennoct.controller.UIController;
  * Date: 13-9-4
  * Time: 下午4:56
  */
-public class ControlTabFolder extends TabFolder {
+class ControlTabFolder extends TabFolder {
 	public ControlTabFolder(Composite parent) {
 		super(parent, SWT.BORDER);
 		TabItem loginTabItem = new TabItem(this, SWT.NONE);

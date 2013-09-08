@@ -21,7 +21,7 @@ public class UIController {
 	private OutputComposite outputComposite = null;
 	private StatusComposite statusComposite = null;
 
-	public UIController() {};
+	private UIController() {}
 
 	public static UIController getInstance() {
 		if (uc == null) {

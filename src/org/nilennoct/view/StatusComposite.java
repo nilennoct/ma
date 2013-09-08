@@ -12,10 +12,10 @@ import org.nilennoct.controller.NetworkController;
  * Time: 下午1:24
  */
 public class StatusComposite extends Composite {
-	ProgressBar apBar = null;
-	ProgressBar bcBar = null;
-	Label apLabel = null;
-	Label bcLabel = null;
+	private ProgressBar apBar = null;
+	private ProgressBar bcBar = null;
+	private Label apLabel = null;
+	private Label bcLabel = null;
 	public StatusComposite(Composite parent) {
 		super(parent, SWT.NONE);
 		this.setLayout(new GridLayout(3, false));

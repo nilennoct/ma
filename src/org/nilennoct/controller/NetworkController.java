@@ -27,34 +27,33 @@ import java.util.ArrayList;
  * Time: 上午12:02
  */
 public class NetworkController {
-	static NetworkController nc = null;
-	CookieManager cookieManager = new CookieManager();
-	static final UIController uc = UIController.getInstance();
+	private static NetworkController nc = null;
+	private final CookieManager cookieManager = new CookieManager();
+	private static final UIController uc = UIController.getInstance();
 
 	public static ExploreThread exploreThread;
 	public static FairyThread fairyThread;
 	public static LoginThread loginThread;
 
-	String name = null;
-	String password = null;
-	String cookie;
+	private String name = null;
+	private String password = null;
 
-	String host = "game1-cbt.ma.sdo.com";
+//	String host = "game1-cbt.ma.sdo.com";
 //	String hostport = "game.ma.mobimon.com.tw:10001";
-	String hostport = "game1-CBT.ma.sdo.com:10001";
-	String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
-	String baseKey = "rBwj1MIAivVN222b";
-	String key12 = baseKey;
-	String key0 = baseKey;
+	private final String hostport = "game1-CBT.ma.sdo.com:10001";
+	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
+//	String baseKey = "rBwj1MIAivVN222b";
+//	String key12 = baseKey;
+//	String key0 = baseKey;
 
 	public UserInfo userInfo;
-	public String areaID = "";
-	public int nextAreaID = 0x7fffffff;
-	int areaIndex = 0;
+	private String areaID = "";
+	private int nextAreaID = 0x7fffffff;
+	private int areaIndex = 0;
 	public String floorID = "";
-	int floorIndex = 0;
-	ArrayList<String> attackedFairyList = new ArrayList<String>();
-	ArrayList<String> failedFairyList = new ArrayList<String>();
+	private int floorIndex = 0;
+	private ArrayList<String> attackedFairyList = new ArrayList<String>();
+	private ArrayList<String> failedFairyList = new ArrayList<String>();
 
 	public int minAP = 6;
 	public int startAP = 60;
@@ -74,7 +73,7 @@ public class NetworkController {
 		networkController.login();
 	}
 
-	public NetworkController() {}
+	private NetworkController() {}
 
 	@Override
 	public void finalize() {
@@ -87,6 +86,11 @@ public class NetworkController {
 		}
 		if (loginThread != null) {
 			loginThread.interrupt();
+		}
+		try {
+			super.finalize();
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
 		}
 	}
 
@@ -113,6 +117,9 @@ public class NetworkController {
 	}
 
 	public synchronized static void setState(StateEnum state) {
+		if (NetworkController.state == StateEnum.LOGOUT) {
+			return;
+		}
 		NetworkController.state = state;
 		if (state == StateEnum.LOGOUT) {
 			System.out.println(Thread.currentThread().getName());
@@ -123,9 +130,6 @@ public class NetworkController {
 				exploreThread.interrupt();
 			}
 			uc.logInThread("You have logged out.");
-		}
-		if (NetworkController.state == StateEnum.LOGOUT) {
-			return;
 		}
 	}
 
@@ -207,10 +211,6 @@ public class NetworkController {
 				fairyselect().mainmenu(true);
 			}
 		});
-	}
-
-	public void checkLogin() {
-
 	}
 
 	public NetworkController mainmenu(boolean refreshStatus) {

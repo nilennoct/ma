@@ -10,7 +10,7 @@ import org.nilennoct.controller.StateEnum;
  * Time: 下午10:28
  */
 public class LoginThread extends Thread {
-	NetworkController nc = null;
+	private final NetworkController nc;
 
 	public LoginThread(NetworkController nc) {
 		super();

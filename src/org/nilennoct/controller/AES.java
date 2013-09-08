@@ -3,7 +3,6 @@ package org.nilennoct.controller;
 import sun.misc.BASE64Encoder;
 
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -13,7 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
  * Time: 下午10:46
  */
 public class AES {
-	static String IV = "AAAAAAAAAAAAAAAA";
+//	static String IV = "AAAAAAAAAAAAAAAA";
 	static String plaintext = "test text 123\0\0\0"; /*Note null padding*/
 	static String encryptionKey = "rBwj1MIAivVN222b";
 

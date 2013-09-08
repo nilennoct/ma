@@ -13,8 +13,8 @@ import org.nilennoct.controller.thread.LoginThread;
  * Date: 13-9-4
  * Time: 下午3:33
  */
-public class LoginComposite extends Composite {
-	NetworkController nc = NetworkController.getInstance();
+class LoginComposite extends Composite {
+	private final NetworkController nc = NetworkController.getInstance();
 
 	public LoginComposite(Composite parent) {
 		super(parent, SWT.NONE);
