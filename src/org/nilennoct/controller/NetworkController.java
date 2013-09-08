@@ -1085,27 +1085,29 @@ public class NetworkController {
 					sid = fairyEvent.serial_id;
 					uid = fairyEvent.user_id;
 					fairyID = sid + "_" + uid;
-					if (userInfo.bc_current < minBC) {
-						if ( ! failedFairyList.contains(fairyID)) {
-							failedFairyList.add(fairyID);
+					if ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID)) {
+						if (userInfo.bc_current < minBC) {
+							if ( ! failedFairyList.contains(fairyID)) {
+								failedFairyList.add(fairyID);
+							}
+							noFail = false;
 						}
-						noFail = false;
-					}
-					else if ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID)) {
-						while (true) {
-							if (++count > 3) {
-								if ( ! failedFairyList.contains(fairyID)) {
-									failedFairyList.add(fairyID);
+						else {
+							while (true) {
+								if (++count > 3) {
+									if ( ! failedFairyList.contains(fairyID)) {
+										failedFairyList.add(fairyID);
+									}
+									noFail = false;
+									break;
 								}
-								noFail = false;
-								break;
+								else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.name)) {
+									fairyselect();
+									failedFairyList.remove(fairyID);
+									break;
+								}
+								Thread.sleep(5000);
 							}
-							else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.name)) {
-								fairyselect();
-								failedFairyList.remove(fairyID);
-								break;
-							}
-							Thread.sleep(5000);
 						}
 					}
 
