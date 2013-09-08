@@ -8,6 +8,7 @@ import org.nilennoct.controller.thread.ExploreThread;
 import org.nilennoct.controller.thread.FairyThread;
 import org.nilennoct.controller.thread.LoginThread;
 import org.nilennoct.model.DataTable;
+import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
 import org.nilennoct.model.UserInfo;
 import org.w3c.dom.Document;
@@ -589,18 +590,18 @@ public class NetworkController {
 
 			NodeList fairy_event_list = doc.getElementsByTagName("fairy_event");
 			int size = fairy_event_list.getLength();
-			DataTable fairyEvent;
+			FairyEvent fairyEvent;
 			Table fairyTable = uc.getFairyComposite().getFairyTable();
 			fairyTable.removeAll();
 			for (int i = 0; i < size; ++i) {
 				fairyEvent = XMLParser.getFairyEvent((Element) fairy_event_list.item(i));
 				if (fairyEvent != null) {
-					String sid = fairyEvent.get("serial_id");
-					String uid = fairyEvent.get("user_id");
+					String sid = fairyEvent.serial_id;
+					String uid = fairyEvent.user_id;
 
 					TableItem fairyItem = new TableItem(fairyTable, SWT.NONE);
 					fairyItem.setText(0, sid);
-					fairyItem.setText(1, fairyEvent.get("name"));
+					fairyItem.setText(1, fairyEvent.name);
 					fairyItem.setText(2, uid);
 				}
 				uc.getFairyComposite().resizeFairyTable();
@@ -1059,27 +1060,36 @@ public class NetworkController {
 			ArrayList<String> tmpFairyList = new ArrayList<String>();
 			NodeList fairy_event_list = doc.getElementsByTagName("fairy_event");
 			int size = fairy_event_list.getLength();
-			DataTable fairyEvent;
+			FairyEvent fairyEvent;
 			String sid, uid;
 			String fairyID;
 
 			System.out.println("minBC: " + minBC);
+			boolean noFail = true;
 			for (int i = 0; i < size; ++i) {
 				fairyEvent = XMLParser.getFairyEvent((Element) fairy_event_list.item(i));
 //				System.out.println(fairyEvent);
 				int count = 0;
 				if (fairyEvent != null) {
-					sid = fairyEvent.get("serial_id");
-					uid = fairyEvent.get("user_id");
+					sid = fairyEvent.serial_id;
+					uid = fairyEvent.user_id;
 					fairyID = sid + "_" + uid;
-					if (userInfo.bc_current >= minBC && ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID))) {
+					if (userInfo.bc_current < minBC) {
+						if ( ! failedFairyList.contains(fairyID)) {
+							failedFairyList.add(fairyID);
+						}
+						noFail = false;
+					}
+					else if ( ! attackedFairyList.contains(fairyID) || failedFairyList.contains(fairyID)) {
 						while (true) {
 							if (++count > 3) {
-								if ( ! failedFairyList.contains(fairyID))
+								if ( ! failedFairyList.contains(fairyID)) {
 									failedFairyList.add(fairyID);
+								}
+								noFail = false;
 								break;
 							}
-							else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.get("name"))) {
+							else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.name)) {
 								fairyselect();
 								failedFairyList.remove(fairyID);
 								break;
@@ -1091,8 +1101,12 @@ public class NetworkController {
 					tmpFairyList.add(fairyID);
 				}
 			}
-//			attackedFairyList.clear();
+			attackedFairyList = null;
 			attackedFairyList = tmpFairyList;
+			if (noFail) {
+				failedFairyList.clear();
+			}
+			System.out.println(failedFairyList);
 
 			connection.disconnect();
 

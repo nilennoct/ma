@@ -1,6 +1,7 @@
 package org.nilennoct.controller;
 
 import org.nilennoct.model.DataTable;
+import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
 import org.nilennoct.model.UserInfo;
 import org.w3c.dom.Document;
@@ -105,55 +106,21 @@ public class XMLParser {
 		return fairyInfo;
 	}
 
-	public static ArrayList<DataTable> getFairyEvent(Document doc) {
-		ArrayList<DataTable> fairyEvents = new ArrayList<DataTable>();
-
-		NodeList fairy_event_list = doc.getElementsByTagName("fairy_event");
-		for (int i = 0; i < fairy_event_list.getLength(); ++i) {
-//			Element fairy_event = (Element) fairy_event_list.item(i);
-			NodeList fairy_event = fairy_event_list.item(i).getChildNodes();
-			DataTable fairyEvent = new DataTable();
-			fairyEvent.put("user_id", getNodeValue(fairy_event.item(0), "id"));
-			Node fairy = fairy_event.item(1);
-			fairyEvent.put("serial_id", getNodeValue(fairy, "serial_id"));
-			fairyEvent.put("name", getNodeValue(fairy, "name") + " Lv." + getNodeValue(fairy, "lv"));
-			fairyEvent.put("put_down", fairy_event.item(2).getTextContent());
-			fairyEvent.put("start_time", fairy_event.item(3).getTextContent());
-
-//			fairyEvent.put("user_id", getNodeValue(getNode(fairy_event, "user"), "id"));
-//			Node fairy = getNode(fairy_event, "fairy");
-//			fairyEvent.put("serial_id", getNodeValue(fairy, "serial_id"));
-//			fairyEvent.put("name", getNodeValue(fairy, "name") + " Lv." + getNodeValue(fairy, "lv"));
-//			fairyEvent.put("start_time", getNodeValue(fairy_event, "start_time"));
-//			fairyEvent.put("put_down", getNodeValue(fairy_event, "put_down"));
-
-//			fairyEvent.put("user_id", ((Element) fairy_event.getElementsByTagName("user").item(0)).getElementsByTagName("id").item(0).getTextContent());
-//			Element fairy = (Element) fairy_event.getElementsByTagName("fairy").item(0);
-//			fairyEvent.put("serial_id", fairy.getElementsByTagName("serial_id").item(0).getTextContent());
-//			fairyEvent.put("name", fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairy.getElementsByTagName("lv").item(0).getTextContent());
-//			fairyEvent.put("start_time", fairy_event.getElementsByTagName("start_time").item(0).getTextContent());
-//			fairyEvent.put("put_down", fairy_event.getElementsByTagName("put_down").item(0).getTextContent());
-			fairyEvents.add(fairyEvent);
-		}
-
-		return fairyEvents;
-	}
-
-	public static DataTable getFairyEvent(Element fairy_event) {
+	public static FairyEvent getFairyEvent(Element fairy_event) {
 		String put_down = fairy_event.getElementsByTagName("put_down").item(0).getTextContent();
 //		System.out.println("put_down: " + put_down);
 		if ( ! put_down.equals("1")) {
 			return null;
 		}
 
-		DataTable fairyEvent = new DataTable();
+		FairyEvent fairyEvent = new FairyEvent();
 
-		fairyEvent.put("user_id", ((Element) fairy_event.getElementsByTagName("user").item(0)).getElementsByTagName("id").item(0).getTextContent());
+		fairyEvent.user_id = ((Element) fairy_event.getElementsByTagName("user").item(0)).getElementsByTagName("id").item(0).getTextContent();
 		Element fairy = (Element) fairy_event.getElementsByTagName("fairy").item(0);
-		fairyEvent.put("serial_id", fairy.getElementsByTagName("serial_id").item(0).getTextContent());
-		fairyEvent.put("name", fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairy.getElementsByTagName("lv").item(0).getTextContent());
-		fairyEvent.put("start_time", fairy_event.getElementsByTagName("start_time").item(0).getTextContent());
-		fairyEvent.put("put_down", put_down);
+		fairyEvent.serial_id = fairy.getElementsByTagName("serial_id").item(0).getTextContent();
+		fairyEvent.name = fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairy.getElementsByTagName("lv").item(0).getTextContent();
+		fairyEvent.start_time = fairy_event.getElementsByTagName("start_time").item(0).getTextContent();
+		fairyEvent.put_down = put_down;
 
 		return fairyEvent;
 	}
