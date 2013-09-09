@@ -34,7 +34,6 @@ class LoginComposite extends Composite {
 		loginButtonGD.horizontalSpan = 2;
 
 		nameLabel.setText("Username: ");
-		nameText.setText("18768113959");
 		nameText.setLayoutData(textGD);
 		passwordLabel.setText("Password: ");
 		passwordText.setText("12345678");

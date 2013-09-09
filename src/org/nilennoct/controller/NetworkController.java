@@ -753,7 +753,7 @@ public class NetworkController {
 
 
 
-	public boolean mainmenuAuto() {
+	public boolean mainmenuAuto() throws InterruptedException {
 		System.out.println("[Auto]mainmenu");
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
@@ -775,7 +775,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return true;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -784,7 +784,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public boolean areaAuto() {
+	public boolean areaAuto() throws InterruptedException {
 		System.out.println("[Auto]area");
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/exploration/area?cyt=1");
@@ -806,7 +806,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return true;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -815,7 +815,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public NetworkController areaAutoNext() {
+	public NetworkController areaAutoNext() throws InterruptedException {
 		System.out.println("[Auto]area_next");
 
 		try {
@@ -854,7 +854,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return this;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -863,7 +863,7 @@ public class NetworkController {
 		return this;
 	}
 
-	public boolean floorAuto() {
+	public boolean floorAuto() throws InterruptedException {
 		if ("".equals(areaID)) {
 			return false;
 		}
@@ -893,7 +893,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return true;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -902,7 +902,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public NetworkController floorAutoNext() {
+	public NetworkController floorAutoNext() throws InterruptedException {
 		if ("".equals(areaID)) {
 			return this;
 		}
@@ -935,7 +935,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return this;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -944,7 +944,7 @@ public class NetworkController {
 		return this;
 	}
 
-	public boolean get_floorAuto() {
+	public boolean get_floorAuto() throws InterruptedException {
 		System.out.println("[Auto]get_floor, areaID: " + areaID + ", floorID: " + floorID);
 		if ("".equals(areaID) || "".equals(floorID)) {
 			return false;
@@ -962,7 +962,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return true;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -971,7 +971,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public String exploreAuto() {
+	public String exploreAuto() throws InterruptedException {
 		System.out.println("[Auto]explore, areaID: " + areaID + ", floorID: " + floorID);
 		if ("".equals(areaID) || "".equals(floorID)) {
 			return null;
@@ -1042,7 +1042,7 @@ public class NetworkController {
 //			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return null;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -1051,7 +1051,7 @@ public class NetworkController {
 		return newFloorID;
 	}
 
-	public boolean fairyselectAuto() {
+	public boolean fairyselectAuto() throws InterruptedException {
 		System.out.println("[Auto]fairyselectAuto");
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/menu/fairyselect?cyt=1");
@@ -1126,7 +1126,7 @@ public class NetworkController {
 //			Thread.sleep(3000);
 		}
 		catch (InterruptedException e) {
-			return false;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -1135,7 +1135,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public boolean fairybattleAuto(final String sid, final String uid, final String name) {
+	public boolean fairybattleAuto(final String sid, final String uid, final String name) throws InterruptedException {
 		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
 		String fairyID = sid + "_" + uid;
 		try {
@@ -1184,7 +1184,7 @@ public class NetworkController {
 			}
 		}
 		catch (InterruptedException e) {
-			return true;
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
