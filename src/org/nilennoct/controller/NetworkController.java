@@ -39,9 +39,10 @@ public class NetworkController {
 	private String password = null;
 
 //	String host = "game1-cbt.ma.sdo.com";
-//	String hostport = "game.ma.mobimon.com.tw:10001";
-	private final String hostport = "game1-CBT.ma.sdo.com:10001";
-	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
+	String hostport = "game.ma.mobimon.com.tw:10001";
+//	private final String hostport = "game1-CBT.ma.sdo.com:10001";
+//	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
+	private final String DefaultUserAgent = "Million/1.0.1 (iPad; iPad2,1; 6.1)";
 //	String baseKey = "rBwj1MIAivVN222b";
 //	String key12 = baseKey;
 //	String key0 = baseKey;
