@@ -73,7 +73,14 @@ public class XMLParser {
 	}
 
 	public static int getErrorCode(Document doc) {
-		return Integer.parseInt(doc.getElementsByTagName("code").item(0).getTextContent());
+		int code =  Integer.parseInt(doc.getElementsByTagName("code").item(0).getTextContent());
+		switch (code) {
+			case 1020:{
+				code = 9000;
+			}
+		}
+
+		return code;
 	}
 
 	public static UserInfo getUserInfo(Document doc) {

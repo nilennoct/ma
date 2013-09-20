@@ -39,8 +39,8 @@ public class NetworkController {
 	private String password = null;
 
 //	String host = "game1-cbt.ma.sdo.com";
-	String hostport = "game.ma.mobimon.com.tw:10001";
-//	private final String hostport = "game1-CBT.ma.sdo.com:10001";
+//	String hostport = "game.ma.mobimon.com.tw:10001";
+	private final String hostport = "game1-CBT.ma.sdo.com:10001";
 //	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
 	private final String DefaultUserAgent = "Million/1.0.1 (iPad; iPad2,1; 6.1)";
 //	String baseKey = "rBwj1MIAivVN222b";
@@ -1033,12 +1033,22 @@ public class NetworkController {
 
 			if (progress.equals("100")) {
 				Node next_floor = doc.getElementsByTagName("next_floor").item(0);
-				if (doc.getElementsByTagName("bonus_list").getLength() == 0 && next_floor != null) {
+				boolean changeArea = doc.getElementsByTagName("bonus_list").getLength() > 0;
+				if (next_floor != null) {
 					newFloorID = XMLParser.getNodeValue(next_floor, "id");
 				}
-				else {
+				else if (changeArea) {
 					newFloorID = "chArea";
 				}
+//				if (changeArea) {
+//					newFloorID = "chArea";
+//				}
+//				else if (next_floor == null) {
+//					newFloorID = floorID;
+//				}
+//				else {
+//					newFloorID = XMLParser.getNodeValue(next_floor, "id");
+//				}
 			}
 //			Thread.sleep(3000);
 		}
@@ -1078,6 +1088,7 @@ public class NetworkController {
 
 			System.out.println("minBC: " + minBC);
 			boolean noFail = true;
+			boolean retry = true;
 			for (int i = 0; i < size; ++i) {
 				fairyEvent = XMLParser.getFairyEvent((Element) fairy_event_list.item(i));
 //				System.out.println(fairyEvent);
@@ -1094,7 +1105,8 @@ public class NetworkController {
 							noFail = false;
 						}
 						else {
-							while (true) {
+							retry = true;
+							while (retry) {
 								if (++count > 3) {
 									if ( ! failedFairyList.contains(fairyID)) {
 										failedFairyList.add(fairyID);
@@ -1106,6 +1118,9 @@ public class NetworkController {
 									fairyselect();
 									failedFairyList.remove(fairyID);
 									break;
+								}
+								else if (state == StateEnum.FAIRYKILLED) {
+									retry = false;
 								}
 								Thread.sleep(5000);
 							}
@@ -1156,6 +1171,9 @@ public class NetworkController {
 				if (code == 9000) {
 					setState(StateEnum.LOGOUT);
 				}
+				else if (code == 1010) {
+					setState(StateEnum.FAIRYKILLED);
+				}
 				return false;
 			}
 
@@ -1179,7 +1197,7 @@ public class NetworkController {
 				}
 			});
 
-			Thread.sleep(13000);
+			Thread.sleep(15000);
 			if (winner == 0) {
 				fairy_lose(sid, uid);
 			}

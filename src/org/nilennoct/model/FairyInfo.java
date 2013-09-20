@@ -14,4 +14,8 @@ public class FairyInfo {
 	public String lv;
 
 	public FairyInfo() {}
+
+	public String toString() {
+		return "Name: " + name + ", Lv." + lv;
+	}
 }
