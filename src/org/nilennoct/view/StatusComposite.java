@@ -33,7 +33,11 @@ public class StatusComposite extends Composite {
 		refreshStatus.addListener(SWT.Selection, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				NetworkController.getInstance().mainmenu(true);
+				try {
+					NetworkController.getInstance().mainmenu(true);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

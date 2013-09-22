@@ -22,13 +22,17 @@ public class FairyThread extends Thread {
 		while (true) {
 			System.out.println("FairyThread start");
 			try {
+				while (NetworkController.state == StateEnum.FAIRYBATTLE) {
+					System.out.println("Wait for fairybattle.");
+					sleep(5000);
+				}
+
 				NetworkController.setState(StateEnum.AUTOFAIRY);
 				System.out.println(NetworkController.state);
 				nc.updateAPBC();    // fairyselect & mainmenu
 
-				while (true) {
-					if (nc.fairyselectAuto()) break;
-				}
+				if ( ! nc.fairyselectAuto())
+					System.out.println("Auto Attack failed, wait for " + nc.fairyInterval / 1000 + "s");
 
 				System.out.println("fairyselectAuto end");
 				NetworkController.setState(StateEnum.FAIRYSELECT);

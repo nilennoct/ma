@@ -33,7 +33,7 @@ public class ExploreThread extends Thread {
 		while (true) {
 			System.out.println("ExploreThread start");
 			try {
-				while (NetworkController.state == StateEnum.AUTOFAIRY) {
+				while (NetworkController.state == StateEnum.AUTOFAIRY || NetworkController.state == StateEnum.FAIRYBATTLE) {
 					System.out.println(NetworkController.state);
 					System.out.println("Wait for fairy");
 					sleep(5000);

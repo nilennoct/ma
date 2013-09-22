@@ -205,16 +205,24 @@ public class NetworkController {
 		return nc;
 	}
 
-	public void updateAPBC() {
+	public void updateAPBC() throws InterruptedException {
+		final InterruptedException[] exception = new InterruptedException[1];
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				fairyselect().mainmenu(true);
+				try {
+					fairyselect().mainmenu(true);
+				} catch (InterruptedException e) {
+					exception[0] = e;
+				}
 			}
 		});
+		if (exception[0] != null) {
+			throw exception[0];
+		}
 	}
 
-	public NetworkController mainmenu(boolean refreshStatus) {
+	public NetworkController mainmenu(boolean refreshStatus) throws InterruptedException {
 		System.out.println("mainmenu");
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
@@ -250,6 +258,9 @@ public class NetworkController {
 			connection.disconnect();
 
 			Thread.sleep(1000);
+		}
+		catch (InterruptedException e) {
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -379,7 +390,11 @@ public class NetworkController {
 		}
 		else if (state != StateEnum.FLOOR && ! next_floor) {
 			if (state != StateEnum.GETFLOOR && state != StateEnum.EXPLORE && state != StateEnum.AUTOEXPLORE) {
-				mainmenu(false);
+				try {
+					mainmenu(false);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 
 			area(false).floor(false);
@@ -542,7 +557,7 @@ public class NetworkController {
 		return nc;
 	}
 
-	public NetworkController fairyselect() {
+	public NetworkController fairyselect() throws InterruptedException {
 		System.out.println("fairyselect");
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/menu/fairyselect?cyt=1");
@@ -564,6 +579,9 @@ public class NetworkController {
 			connection.disconnect();
 
 			Thread.sleep(1000);
+		}
+		catch (InterruptedException e) {
+			throw e;
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -972,7 +990,7 @@ public class NetworkController {
 		return true;
 	}
 
-	public String exploreAuto() throws InterruptedException {
+	public synchronized String exploreAuto() throws InterruptedException {
 		System.out.println("[Auto]explore, areaID: " + areaID + ", floorID: " + floorID);
 		if ("".equals(areaID) || "".equals(floorID)) {
 			return null;
@@ -1121,6 +1139,7 @@ public class NetworkController {
 								}
 								else if (state == StateEnum.FAIRYKILLED) {
 									retry = false;
+									NetworkController.setState(StateEnum.AUTOFAIRY);
 								}
 								Thread.sleep(5000);
 							}
@@ -1151,9 +1170,12 @@ public class NetworkController {
 		return true;
 	}
 
-	public boolean fairybattleAuto(final String sid, final String uid, final String name) throws InterruptedException {
+	public synchronized boolean fairybattleAuto(final String sid, final String uid, final String name) throws InterruptedException {
 		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
 		String fairyID = sid + "_" + uid;
+		StateEnum current = state;
+		setState(StateEnum.FAIRYBATTLE);
+
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/exploration/fairybattle?cyt=1");
 			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
@@ -1174,6 +1196,7 @@ public class NetworkController {
 				else if (code == 1010) {
 					setState(StateEnum.FAIRYKILLED);
 				}
+				setState(current);
 				return false;
 			}
 
@@ -1207,6 +1230,9 @@ public class NetworkController {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+		}
+		finally {
+			setState(current);
 		}
 
 		return true;

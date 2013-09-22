@@ -19,4 +19,5 @@ public enum StateEnum {
 	AUTOFAIRY,
 	AUTOEXPLORE,
 	FAIRYKILLED,
+	MAINTAIN,
 }
