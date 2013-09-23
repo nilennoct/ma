@@ -43,7 +43,7 @@ public class LoginComposite extends Composite {
 		loginButton.setLayoutData(loginButtonGD);
 		checkLoginButton.setText("Check login status(s)");
 		checkLoginButton.setEnabled(false);
-		checkLoginText.setText("180");
+		checkLoginText.setText("600");
 
 		loginButton.addListener(SWT.Selection, new Listener() {
 			@Override
@@ -66,7 +66,7 @@ public class LoginComposite extends Composite {
 						nc.checkLoginInterval = Integer.parseInt(checkLoginText.getText()) * 1000;
 					}
 					catch (Exception e) {
-						nc.checkLoginInterval = 180000;
+						nc.checkLoginInterval = 600000;
 					}
 					NetworkController.loginThread = new LoginThread(nc);
 					NetworkController.loginThread.start();

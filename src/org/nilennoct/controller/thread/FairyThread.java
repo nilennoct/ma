@@ -31,8 +31,9 @@ public class FairyThread extends Thread {
 				System.out.println(NetworkController.state);
 				nc.updateAPBC();    // fairyselect & mainmenu
 
-				if ( ! nc.fairyselectAuto())
+				if ( ! nc.fairyselectAuto()) {
 					System.out.println("Auto Attack failed, wait for " + nc.fairyInterval / 1000 + "s");
+				}
 
 				System.out.println("fairyselectAuto end");
 				NetworkController.setState(StateEnum.FAIRYSELECT);
@@ -49,6 +50,7 @@ public class FairyThread extends Thread {
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
+							System.out.println("ExploreThread end.");
 							return;
 						}
 					}

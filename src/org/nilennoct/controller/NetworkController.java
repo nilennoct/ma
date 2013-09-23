@@ -48,26 +48,27 @@ public class NetworkController {
 //	String key0 = baseKey;
 
 	public UserInfo userInfo;
-	private String areaID = "";
+	private String areaID = "1";
 	private int nextAreaID = 0x7fffffff;
 	private int areaIndex = 0;
-	public String floorID = "";
+	public String floorID = "1";
 	private int floorIndex = 0;
 	private ArrayList<String> attackedFairyList = new ArrayList<String>();
 	private ArrayList<String> failedFairyList = new ArrayList<String>();
 
 	public int minAP = 6;
-	public int startAP = 60;
+	public int startAP = 80;
 	public int minBC = 2;
 	public boolean nextArea = false;
 	public int minAreaID = 1000;
 	public boolean nextFloor = false;
 
-	public int fairyInterval = 60000;
-	public int exploreInterval = 5000;
-	public int checkLoginInterval = 180000; // 3 minutes
+	public int fairyInterval = 120000;
+	public int exploreInterval = 12000;
+	public int checkLoginInterval = 600000; // 3 minutes
 
 	public static StateEnum state = StateEnum.LOGOUT;
+	public static StateEnum tmpState;
 	public static boolean offline = true;
 
 	public static void main(String[] args) {
@@ -127,7 +128,7 @@ public class NetworkController {
 			return;
 		}
 		NetworkController.state = state;
-		System.out.println(Thread.currentThread().getName());
+//		System.out.println(Thread.currentThread().getName());
 		switch (state) {
 			case LOGOUT: {
 				offline = true;
@@ -217,6 +218,12 @@ public class NetworkController {
 
 			cookieManager.storeCookies(connection);
 			userInfo = XMLParser.getUserInfo(doc).updateAPBCMaxInThread();
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					Display.getDefault().getActiveShell().setText("MARunner - " + userInfo.name);
+				}
+			});
 
 //			in.close();
 			connection.disconnect();
@@ -246,7 +253,6 @@ public class NetworkController {
 					break;
 				}
 				case 8000: {
-					msg = "持有的卡片数量已经超过上限";
 					if (msg.indexOf("超过上限") >= 0) {
 						setState(StateEnum.OVERFLOW);
 					}
@@ -264,10 +270,8 @@ public class NetworkController {
 
 			return false;
 		}
-		else {
-			return true;
-		}
 
+		return true;
 	}
 
 	public void updateAPBC() throws InterruptedException {
@@ -534,7 +538,7 @@ public class NetworkController {
 				case 1: {
 					FairyInfo fairyInfo = XMLParser.getFairyInfo(doc);
 					log += fairyInfo.toString();
-					fairybattleAuto(fairyInfo.serial_id, fairyInfo.discoverer_id, fairyInfo.name);
+					fairybattleAuto(fairyInfo);
 					break;
 				}
 				case 2: {
@@ -666,13 +670,11 @@ public class NetworkController {
 			for (int i = 0; i < size; ++i) {
 				fairyEvent = XMLParser.getFairyEvent((Element) fairy_event_list.item(i));
 				if (fairyEvent != null) {
-					String sid = fairyEvent.serial_id;
-					String uid = fairyEvent.user_id;
-
 					TableItem fairyItem = new TableItem(fairyTable, SWT.NONE);
-					fairyItem.setText(0, sid);
-					fairyItem.setText(1, fairyEvent.name);
-					fairyItem.setText(2, uid);
+//					fairyItem.setText(0, fairyEvent.serial_id);
+					fairyItem.setText(0, fairyEvent.name);
+					fairyItem.setText(1, fairyEvent.username);
+					fairyItem.setData(fairyEvent);
 				}
 				uc.getFairyComposite().resizeFairyTable();
 			}
@@ -716,7 +718,9 @@ public class NetworkController {
 		return nc;
 	}
 
-	public NetworkController fairybattle(String sid, String uid, String name) {
+	public NetworkController fairybattle(FairyEvent fairyEvent) {
+		String sid = fairyEvent.serial_id;
+		String uid = fairyEvent.user_id;
 		fairy_floor(sid, uid);
 		System.out.println("fairybattle, sid: " + sid + ", uid: " + uid);
 		try {
@@ -748,13 +752,13 @@ public class NetworkController {
 			int winner = Integer.parseInt(XMLParser.getNodeValue(doc, "winner"));
 
 			String restHP = ((Element) doc.getElementsByTagName("fairy").item(0)).getElementsByTagName("hp").item(0).getTextContent();
-			uc.logInThread(name + " attacked, " + restHP + "HP rest, " + (winner == 1 ? "Win." : "Lose."));
+			uc.logInThread(fairyEvent.name + " attacked, " + restHP + "HP rest, " + (winner == 1 ? "Win." : "Lose."));
 
 			Table attackedTable = uc.getFairyComposite().getAttackedTable();
 			TableItem attackedItem = new TableItem(attackedTable, SWT.NONE);
-			attackedItem.setText(0, sid);
-			attackedItem.setText(1, name);
-			attackedItem.setText(2, uid);
+//			attackedItem.setText(0, sid);
+			attackedItem.setText(0, fairyEvent.name);
+			attackedItem.setText(1, fairyEvent.username);
 			uc.getFairyComposite().resizeAttackedTable();
 
 //			in.close();
@@ -764,6 +768,10 @@ public class NetworkController {
 
 			if (winner == 0) {
 				fairy_lose(sid, uid);
+			}
+
+			synchronized (this) {
+				state = StateEnum.FAIRYSELECT;
 			}
 		}
 		catch (Exception e) {
@@ -1013,7 +1021,7 @@ public class NetworkController {
 
 			out.writeBytes(content);
 			connection.connect();
-//
+
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
 //			String xml = "";
@@ -1039,7 +1047,7 @@ public class NetworkController {
 				case 1: {
 					FairyInfo fairyInfo = XMLParser.getFairyInfo(doc);
 					log += fairyInfo.toString();
-					fairybattleAuto(fairyInfo.serial_id, fairyInfo.discoverer_id, fairyInfo.name);
+					fairybattleAuto(fairyInfo);
 					get_floorAuto();
 					break;
 				}
@@ -1107,7 +1115,7 @@ public class NetworkController {
 
 			System.out.println("minBC: " + minBC);
 			boolean noFail = true;
-			boolean retry = true;
+			boolean retry;
 			for (int i = 0; i < size; ++i) {
 				fairyEvent = XMLParser.getFairyEvent((Element) fairy_event_list.item(i));
 //				System.out.println(fairyEvent);
@@ -1133,16 +1141,16 @@ public class NetworkController {
 									noFail = false;
 									break;
 								}
-								else if (fairy_floor(sid, uid).fairybattleAuto(sid, uid, fairyEvent.name)) {
+								else if (fairy_floor(sid, uid).fairybattleAuto(fairyEvent)) {
 									fairyselect();
 									failedFairyList.remove(fairyID);
 									break;
 								}
 								else if (state == StateEnum.FAIRYKILLED) {
 									retry = false;
-									NetworkController.setState(StateEnum.AUTOFAIRY);
+									setState(StateEnum.AUTOFAIRY);
 								}
-								Thread.sleep(5000);
+								Thread.sleep(3000);
 							}
 						}
 					}
@@ -1171,11 +1179,14 @@ public class NetworkController {
 		return true;
 	}
 
-	public synchronized boolean fairybattleAuto(final String sid, final String uid, final String name) throws InterruptedException {
-		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
+	public synchronized boolean fairybattleAuto(final FairyEvent fairyEvent) throws InterruptedException {
+		String sid = fairyEvent.serial_id;
+		String uid = fairyEvent.user_id;
 		String fairyID = sid + "_" + uid;
-		StateEnum current = state;
+		tmpState = state;
 		setState(StateEnum.FAIRYBATTLE);
+
+		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
 
 		try {
 			HttpURLConnection connection = newPostConnection("/connect/app/exploration/fairybattle?cyt=1");
@@ -1195,8 +1206,8 @@ public class NetworkController {
 			userInfo = XMLParser.getUserInfo(doc).updateAPBCInThread();
 
 			String restHP = ((Element) doc.getElementsByTagName("fairy").item(0)).getElementsByTagName("hp").item(0).getTextContent();
-			uc.logInThread(name + " attacked, " + restHP + "HP rest.");
 			int winner = Integer.parseInt(XMLParser.getNodeValue(doc, "winner"));
+			uc.logInThread(fairyEvent.name + " attacked, " + restHP + "HP rest, " + (winner == 1 ? "Win." : "Lose."));
 
 			attackedFairyList.add(fairyID);
 
@@ -1205,9 +1216,9 @@ public class NetworkController {
 				public void run() {
 					Table attackedTable = uc.getFairyComposite().getAttackedTable();
 					TableItem attackedItem = new TableItem(attackedTable, SWT.NONE);
-					attackedItem.setText(0, sid);
-					attackedItem.setText(1, name);
-					attackedItem.setText(2, uid);
+//					attackedItem.setText(0, sid);
+					attackedItem.setText(0, fairyEvent.name);
+					attackedItem.setText(1, fairyEvent.username);
 					uc.getFairyComposite().resizeAttackedTable();
 				}
 			});
@@ -1224,7 +1235,9 @@ public class NetworkController {
 			e.printStackTrace();
 		}
 		finally {
-			setState(current);
+			if (tmpState != StateEnum.AUTOFAIRY) {
+				setState(tmpState);
+			}
 		}
 
 		return true;

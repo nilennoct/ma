@@ -23,13 +23,24 @@ public class LoginThread extends Thread {
 			System.out.println("LoginThread start");
 			try {
 				if (NetworkController.state == StateEnum.MAINTAIN) {
-					sleep(3600000);
+					while (true) {
+						sleep(1800000);
+						nc.login();
+						if (NetworkController.state == StateEnum.MAIN) {
+							synchronized (nc) {
+								nc.notifyAll();
+							}
+							break;
+						}
+					}
 				}
 				else {
 					if (NetworkController.state == StateEnum.LOGOUT) {
 						nc.login();
-						synchronized (nc) {
-							nc.notifyAll();
+						if (NetworkController.state == StateEnum.MAIN) {
+							synchronized (nc) {
+								nc.notifyAll();
+							}
 						}
 					}
 					sleep(nc.checkLoginInterval);

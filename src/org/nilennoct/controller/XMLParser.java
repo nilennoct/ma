@@ -105,8 +105,8 @@ public class XMLParser {
 		FairyInfo fairyInfo = new FairyInfo();
 		Node fairy = doc.getElementsByTagName("fairy").item(0);
 		fairyInfo.serial_id = getNodeValue(fairy, "serial_id");
-		fairyInfo.discoverer_id = getNodeValue(fairy, "discoverer_id");
-		fairyInfo.master_boss_id = getNodeValue(fairy, "master_boss_id");
+		fairyInfo.user_id = getNodeValue(fairy, "discoverer_id");
+//		fairyInfo.master_boss_id = getNodeValue(fairy, "master_boss_id");
 		fairyInfo.lv = getNodeValue(fairy, "lv");
 		fairyInfo.name = getNodeValue(fairy, "name") + " Lv." + fairyInfo.lv;
 
@@ -122,11 +122,14 @@ public class XMLParser {
 
 		FairyEvent fairyEvent = new FairyEvent();
 
-		fairyEvent.user_id = ((Element) fairy_event.getElementsByTagName("user").item(0)).getElementsByTagName("id").item(0).getTextContent();
+		Element user = (Element) fairy_event.getElementsByTagName("user").item(0);
+		fairyEvent.user_id = user.getElementsByTagName("id").item(0).getTextContent();
+		fairyEvent.username = user.getElementsByTagName("name").item(0).getTextContent();
 		Element fairy = (Element) fairy_event.getElementsByTagName("fairy").item(0);
 		fairyEvent.serial_id = fairy.getElementsByTagName("serial_id").item(0).getTextContent();
-		fairyEvent.name = fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairy.getElementsByTagName("lv").item(0).getTextContent();
-		fairyEvent.start_time = fairy_event.getElementsByTagName("start_time").item(0).getTextContent();
+		fairyEvent.lv = fairy.getElementsByTagName("lv").item(0).getTextContent();
+		fairyEvent.name = fairy.getElementsByTagName("name").item(0).getTextContent() + " Lv." + fairyEvent.lv;
+//		fairyEvent.start_time = fairy_event.getElementsByTagName("start_time").item(0).getTextContent();
 		fairyEvent.put_down = put_down;
 
 		return fairyEvent;

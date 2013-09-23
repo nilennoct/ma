@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.thread.FairyThread;
+import org.nilennoct.model.FairyEvent;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,8 +19,8 @@ public class FairyComposite extends Composite {
 
 	private Table fairyTable = null;
 	private Table attackedTable = null;
-	private final String[] fairyColumnTitle = new String[] {"SID", "Name", "Owner"};
-	private final String[] attackedColumnTitle = new String[] {"SID", "Name", "Owner"};
+	private final String[] fairyColumnTitle = new String[] {"Name", "Owner"};
+	private final String[] attackedColumnTitle = new String[] {"Name", "Owner"};
 
 	private final Button start;
 	private final Button stop;
@@ -44,12 +45,12 @@ public class FairyComposite extends Composite {
 		GridData textGD = new GridData(GridData.FILL, GridData.FILL, true, false);
 		tableGD.horizontalSpan = 4;
 
-		fairyTable = new Table(leftComposite, SWT.BORDER | SWT.V_SCROLL);
+		fairyTable = new Table(leftComposite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		fairyTable.setLayoutData(tableGD);
 		fairyTable.setLinesVisible (true);
 		fairyTable.setHeaderVisible (true);
 
-		attackedTable = new Table(rightComposite, SWT.BORDER | SWT.V_SCROLL);
+		attackedTable = new Table(rightComposite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		attackedTable.setLayoutData(tableGD);
 		attackedTable.setLinesVisible (true);
 		attackedTable.setHeaderVisible (true);
@@ -71,7 +72,7 @@ public class FairyComposite extends Composite {
 		Label fairyIntervalLabel = new Label(rightComposite, SWT.CENTER);
 		fairyIntervalLabel.setText("Scan interval(s): ");
 		final Text fairyIntervalText = new Text(rightComposite, SWT.BORDER);
-		fairyIntervalText.setText("60");
+		fairyIntervalText.setText("120");
 		fairyIntervalText.setLayoutData(textGD);
 
 		start = new Button(rightComposite, SWT.PUSH);
@@ -108,7 +109,8 @@ public class FairyComposite extends Composite {
 			public void handleEvent(Event event) {
 				TableItem selected = fairyTable.getSelection()[0];
 				if (selected != null) {
-					NetworkController.getInstance().fairybattle(selected.getText(0), selected.getText(2), selected.getText(1));
+					FairyEvent fairyEvent = (FairyEvent) selected.getData();
+					NetworkController.getInstance().fairybattle(fairyEvent);
 				}
 			}
 		});
@@ -154,13 +156,13 @@ public class FairyComposite extends Composite {
 	}
 
 	public void resizeFairyTable() {
-		for (int i = 0; i < fairyColumnTitle.length; ++i) {
+		for (int i = fairyColumnTitle.length - 1; i >= 0 ; --i) {
 			fairyTable.getColumn(i).pack();
 		}
 	}
 
 	public void resizeAttackedTable() {
-		for (int i = 0; i < attackedColumnTitle.length; ++i) {
+		for (int i = attackedColumnTitle.length - 1; i >= 0 ; --i) {
 			attackedTable.getColumn(i).pack();
 		}
 	}

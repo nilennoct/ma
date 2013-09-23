@@ -92,8 +92,10 @@ public class ExploreThread extends Thread {
 						}
 						try {
 							nc.wait();
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
+						}
+						catch (InterruptedException e1) {
+							System.out.println("ExploreThread end.");
+							return;
 						}
 					}
 				}

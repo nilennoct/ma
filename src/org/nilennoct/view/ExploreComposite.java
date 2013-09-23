@@ -71,7 +71,7 @@ public class ExploreComposite extends Composite {
 		Label startAPLabel = new Label(rightComposite, SWT.CENTER);
 		startAPLabel.setText("Start AP: ");
 		final Text startAPText = new Text(rightComposite, SWT.BORDER);
-		startAPText.setText("60");
+		startAPText.setText("80");
 		startAPText.setLayoutData(textGD);
 
 		Label minAIDLabel = new Label(rightComposite, SWT.CENTER);
@@ -82,13 +82,15 @@ public class ExploreComposite extends Composite {
 
 		final Button nextAreaButton = new Button(rightComposite, SWT.CHECK);
 		nextAreaButton.setText("Next Area");
+		nextAreaButton.setSelection(true);
 		final Button nextFloorButton = new Button(rightComposite, SWT.CHECK);
 		nextFloorButton.setText("Next Floor");
+		nextFloorButton.setSelection(true);
 
 		Label exploreIntervalLabel = new Label(rightComposite, SWT.CENTER);
 		exploreIntervalLabel.setText("Explore interval(s): ");
 		final Text exploreIntervalText = new Text(rightComposite, SWT.BORDER);
-		exploreIntervalText.setText("5");
+		exploreIntervalText.setText("12");
 		exploreIntervalText.setLayoutData(textGD);
 
 		autoExplore = new Button(rightComposite, SWT.PUSH);

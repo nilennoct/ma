@@ -8,10 +8,11 @@ package org.nilennoct.model;
  */
 public class FairyEvent {
 	public String user_id;
+	public String username;
 	public String serial_id;
 	public String name;
-	public String start_time;
 	public String put_down;
+	public String lv;
 
 	public FairyEvent() {}
 }
