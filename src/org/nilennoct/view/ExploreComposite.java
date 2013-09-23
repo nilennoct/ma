@@ -237,6 +237,11 @@ public class ExploreComposite extends Composite {
 		}
 	}
 
+	public void resetButtons() {
+		autoExplore.setEnabled(true);
+		stopExplore.setEnabled(false);
+	}
+
 	public void updateProgress(int floorIndex, String progress) {
 		TableItem currentFloor = floorTable.getItem(floorIndex);
 		currentFloor.setText(1, progress);

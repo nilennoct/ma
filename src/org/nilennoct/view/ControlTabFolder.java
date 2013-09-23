@@ -24,6 +24,7 @@ class ControlTabFolder extends TabFolder {
 
 		loginTabItem.setText("Login");
 		loginTabItem.setControl(loginComposite);
+		UIController.getInstance().setLoginComposite(loginComposite);
 		fairyTabItem.setText("Fairy");
 		fairyTabItem.setControl(fairyComposite);
 		UIController.getInstance().setFairyComposite(fairyComposite);

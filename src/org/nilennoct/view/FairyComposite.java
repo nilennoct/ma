@@ -165,4 +165,9 @@ public class FairyComposite extends Composite {
 		}
 	}
 
+	public void resetButtons() {
+		start.setEnabled(true);
+		stop.setEnabled(false);
+	}
+
 }

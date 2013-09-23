@@ -74,11 +74,13 @@ public class XMLParser {
 
 	public static int getErrorCode(Document doc) {
 		int code =  Integer.parseInt(doc.getElementsByTagName("code").item(0).getTextContent());
-		switch (code) {
-			case 1020:{
-				code = 9000;
-			}
-		}
+//		switch (code) {
+//			case 1020:{
+//				code = 9000;
+//			}
+//		}
+//		Random random = new Random();
+//		if (random.nextInt(10) >= 7) code = 8000;
 
 		return code;
 	}

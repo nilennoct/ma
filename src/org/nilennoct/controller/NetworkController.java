@@ -68,10 +68,15 @@ public class NetworkController {
 	public int checkLoginInterval = 180000; // 3 minutes
 
 	public static StateEnum state = StateEnum.LOGOUT;
+	public static boolean offline = true;
 
 	public static void main(String[] args) {
 		NetworkController networkController = new NetworkController();
-		networkController.login();
+		try {
+			networkController.login();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private NetworkController() {}
@@ -118,19 +123,43 @@ public class NetworkController {
 	}
 
 	public synchronized static void setState(StateEnum state) {
-		if (NetworkController.state == StateEnum.LOGOUT) {
+		if (offline) {
 			return;
 		}
 		NetworkController.state = state;
-		if (state == StateEnum.LOGOUT) {
-			System.out.println(Thread.currentThread().getName());
-			if (fairyThread != null) {
-				fairyThread.interrupt();
+		System.out.println(Thread.currentThread().getName());
+		switch (state) {
+			case LOGOUT: {
+				offline = true;
+				interruptThreads(false);
+				uc.logInThread("You have logged out.");
+				break;
 			}
-			if (exploreThread != null) {
-				exploreThread.interrupt();
+			case MAINTAIN: {
+				offline = true;
+				interruptThreads(false);
+				uc.logInThread("Server is maintained.");
+				break;
 			}
-			uc.logInThread("You have logged out.");
+			case OVERFLOW: {
+				offline = true;
+				interruptThreads(true);
+				uc.resetButtons();
+				uc.logInThread("Cards are overflow. Need login again.");
+				break;
+			}
+		}
+	}
+
+	public static void interruptThreads(boolean isAll) {
+		if (fairyThread != null) {
+			fairyThread.interrupt();
+		}
+		if (exploreThread != null) {
+			exploreThread.interrupt();
+		}
+		if (isAll && loginThread != null) {
+			loginThread.interrupt();
 		}
 	}
 
@@ -152,7 +181,7 @@ public class NetworkController {
 		return connection;
 	}
 
-	public NetworkController login() {
+	public NetworkController login() throws InterruptedException {
 		System.out.println("login");
 		state = StateEnum.MAIN;
 		try {
@@ -175,15 +204,11 @@ public class NetworkController {
 //			System.out.println(xml);
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return nc;
 			}
 
+			offline = false;
 			uc.logInThread("Login successfully.");
 
 			synchronized (this) {
@@ -198,11 +223,51 @@ public class NetworkController {
 
 			Thread.sleep(1000);
 		}
+		catch (InterruptedException e) {
+			throw e;
+		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		return nc;
+	}
+
+	public boolean checkCode(Document doc) {
+		int code = XMLParser.getErrorCode(doc);
+
+		if (code != 0) {
+			String msg = XMLParser.getNodeValue(doc, "message");
+			uc.logInThread("Err" + code + ": " + msg);
+
+			switch (code) {
+				case 9000: {
+					setState(StateEnum.LOGOUT);
+					break;
+				}
+				case 8000: {
+					msg = "持有的卡片数量已经超过上限";
+					if (msg.indexOf("超过上限") >= 0) {
+						setState(StateEnum.OVERFLOW);
+					}
+					break;
+				}
+				case 1010: {
+					setState(StateEnum.FAIRYKILLED);
+					break;
+				}
+				case 1020: {
+					setState(StateEnum.MAINTAIN);
+					break;
+				}
+			}
+
+			return false;
+		}
+		else {
+			return true;
+		}
+
 	}
 
 	public void updateAPBC() throws InterruptedException {
@@ -238,12 +303,7 @@ public class NetworkController {
 			if (refreshStatus) {
 				Document doc = XMLParser.parseXML(connection.getInputStream());
 
-				int code = XMLParser.getErrorCode(doc);
-				if (code != 0) {
-					uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-					if (code == 9000) {
-						setState(StateEnum.LOGOUT);
-					}
+				if ( ! checkCode(doc)) {
 					return nc;
 				}
 
@@ -285,12 +345,7 @@ public class NetworkController {
 			if (refresh) {
 				Document doc = XMLParser.parseXML(connection.getInputStream());
 
-				int code = XMLParser.getErrorCode(doc);
-				if (code != 0) {
-					uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-					if (code == 9000) {
-						setState(StateEnum.LOGOUT);
-					}
+				if ( ! checkCode(doc)) {
 					return nc;
 				}
 
@@ -346,12 +401,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return nc;
 			}
 
@@ -409,8 +459,8 @@ public class NetworkController {
 			out.writeBytes(content);
 			connection.connect();
 
-			int code = connection.getResponseCode();
-			System.out.println("Code: " + code);
+//			int code = connection.getResponseCode();
+//			System.out.println("Code: " + code);
 
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -465,12 +515,7 @@ public class NetworkController {
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 //			Document doc = XMLParser.parseXML(xml);
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return nc;
 			}
 
@@ -605,12 +650,7 @@ public class NetworkController {
 //			System.out.println(xml);
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return nc;
 			}
 
@@ -695,12 +735,7 @@ public class NetworkController {
 //			System.out.println(xml);
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.log("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return nc;
 			}
 
@@ -780,12 +815,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return false;
 			}
 
@@ -811,12 +841,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return false;
 			}
 
@@ -843,13 +868,8 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
-				return this;
+			if ( ! checkCode(doc)) {
+				return nc;
 			}
 
 			int nextAreaID = 0x7fffffff;
@@ -879,7 +899,7 @@ public class NetworkController {
 			e.printStackTrace();
 		}
 
-		return this;
+		return nc;
 	}
 
 	public boolean floorAuto() throws InterruptedException {
@@ -898,12 +918,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return false;
 			}
 
@@ -937,13 +952,8 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
-				return this;
+			if ( ! checkCode(doc)) {
+				return nc;
 			}
 
 			NodeList floor_info_list = doc.getElementsByTagName("floor_info");
@@ -1016,12 +1026,7 @@ public class NetworkController {
 //			Document doc = XMLParser.parseXML(xml);
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return null;
 			}
 
@@ -1035,6 +1040,7 @@ public class NetworkController {
 					FairyInfo fairyInfo = XMLParser.getFairyInfo(doc);
 					log += fairyInfo.toString();
 					fairybattleAuto(fairyInfo.serial_id, fairyInfo.discoverer_id, fairyInfo.name);
+					get_floorAuto();
 					break;
 				}
 				case 6: {
@@ -1088,12 +1094,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
+			if ( ! checkCode(doc)) {
 				return false;
 			}
 
@@ -1187,16 +1188,7 @@ public class NetworkController {
 
 			Document doc = XMLParser.parseXML(connection.getInputStream());
 
-			int code = XMLParser.getErrorCode(doc);
-			if (code != 0) {
-				uc.logInThread("Err" + code + ": " + XMLParser.getNodeValue(doc, "message"));
-				if (code == 9000) {
-					setState(StateEnum.LOGOUT);
-				}
-				else if (code == 1010) {
-					setState(StateEnum.FAIRYKILLED);
-				}
-				setState(current);
+			if ( ! checkCode(doc)) {
 				return false;
 			}
 
@@ -1220,7 +1212,7 @@ public class NetworkController {
 				}
 			});
 
-			Thread.sleep(15000);
+			Thread.sleep(16000);
 			if (winner == 0) {
 				fairy_lose(sid, uid);
 			}

@@ -1,10 +1,7 @@
 package org.nilennoct.controller;
 
 import org.eclipse.swt.widgets.Display;
-import org.nilennoct.view.ExploreComposite;
-import org.nilennoct.view.FairyComposite;
-import org.nilennoct.view.OutputComposite;
-import org.nilennoct.view.StatusComposite;
+import org.nilennoct.view.*;
 
 import java.util.Date;
 
@@ -16,6 +13,7 @@ import java.util.Date;
  */
 public class UIController {
 	private static UIController uc = null;
+	private LoginComposite loginComposite = null;
 	private FairyComposite fairyComposite = null;
 	private ExploreComposite exploreComposite = null;
 	private OutputComposite outputComposite = null;
@@ -75,5 +73,21 @@ public class UIController {
 
 	public void setStatusComposite(StatusComposite statusComposite) {
 		this.statusComposite = statusComposite;
+	}
+
+	public void setLoginComposite(LoginComposite loginComposite) {
+		this.loginComposite = loginComposite;
+	}
+
+	public void resetButtons() {
+		Display.getDefault().syncExec(new Runnable() {
+			@Override
+			public void run() {
+				loginComposite.checkLoginButton.setEnabled(false);
+				loginComposite.checkLoginButton.setSelection(false);
+				fairyComposite.resetButtons();
+				exploreComposite.resetButtons();
+			}
+		});
 	}
 }

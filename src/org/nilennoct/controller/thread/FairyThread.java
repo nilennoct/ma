@@ -40,18 +40,24 @@ public class FairyThread extends Thread {
 				sleep(nc.fairyInterval);
 			}
 			catch (InterruptedException e) {
-				if (NetworkController.state == StateEnum.LOGOUT) {
+				if (NetworkController.offline) {
 					synchronized (nc) {
+						if (NetworkController.state == StateEnum.OVERFLOW) {
+							System.out.println("FairyThread end.");
+							return;
+						}
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
-							e1.printStackTrace();
+							return;
 						}
 					}
 				}
 				else {
 					System.out.println("FairyThread end.");
-					NetworkController.setState(StateEnum.MAIN);
+					if (NetworkController.state == StateEnum.AUTOFAIRY) {
+						NetworkController.setState(StateEnum.MAIN);
+					}
 					return;
 				}
 			}

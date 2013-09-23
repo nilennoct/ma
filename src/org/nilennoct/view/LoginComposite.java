@@ -13,8 +13,9 @@ import org.nilennoct.controller.thread.LoginThread;
  * Date: 13-9-4
  * Time: 下午3:33
  */
-class LoginComposite extends Composite {
+public class LoginComposite extends Composite {
 	private final NetworkController nc = NetworkController.getInstance();
+	public Button checkLoginButton;
 
 	public LoginComposite(Composite parent) {
 		super(parent, SWT.NONE);
@@ -26,7 +27,7 @@ class LoginComposite extends Composite {
 		final Text passwordText = new Text(this, SWT.BORDER | SWT.PASSWORD);
 
 		Button loginButton = new Button(this, SWT.PUSH);
-		final Button checkLoginButton = new Button(this, SWT.CHECK);
+		checkLoginButton = new Button(this, SWT.CHECK);
 		final Text checkLoginText = new Text(this, SWT.BORDER);
 
 		GridData textGD = new GridData(GridData.FILL, GridData.FILL, true, false);
@@ -49,7 +50,11 @@ class LoginComposite extends Composite {
 			public void handleEvent(Event event) {
 				checkLoginButton.setEnabled(true);
 				nc.setUserInfo(nameText.getText(), passwordText.getText());
-				nc.login();
+				try {
+					nc.login();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 

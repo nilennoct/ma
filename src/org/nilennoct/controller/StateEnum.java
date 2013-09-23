@@ -20,4 +20,5 @@ public enum StateEnum {
 	AUTOEXPLORE,
 	FAIRYKILLED,
 	MAINTAIN,
+	OVERFLOW,
 }

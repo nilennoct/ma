@@ -84,8 +84,12 @@ public class ExploreThread extends Thread {
 				}
 			}
 			catch (InterruptedException e) {
-				if (NetworkController.state == StateEnum.LOGOUT) {
+				if (NetworkController.offline) {
 					synchronized (nc) {
+						if (NetworkController.state == StateEnum.OVERFLOW) {
+							System.out.println("ExploreThread end.");
+							return;
+						}
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
