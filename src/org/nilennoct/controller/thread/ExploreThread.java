@@ -87,20 +87,20 @@ public class ExploreThread extends Thread {
 				if (NetworkController.offline) {
 					synchronized (nc) {
 						if (NetworkController.state == StateEnum.OVERFLOW) {
-							System.out.println("ExploreThread end.");
+							System.out.println("[" + NetworkController.state + "]ExploreThread end.");
 							return;
 						}
 						try {
 							nc.wait();
 						}
 						catch (InterruptedException e1) {
-							System.out.println("ExploreThread end.");
+							System.out.println("[" + NetworkController.state + "]ExploreThread end.");
 							return;
 						}
 					}
 				}
 				else {
-					System.out.println("ExploreThread end.");
+					System.out.println("[" + NetworkController.state + "]ExploreThread end.");
 					return;
 				}
 			}

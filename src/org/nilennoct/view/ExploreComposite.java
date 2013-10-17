@@ -90,7 +90,7 @@ public class ExploreComposite extends Composite {
 		Label exploreIntervalLabel = new Label(rightComposite, SWT.CENTER);
 		exploreIntervalLabel.setText("Explore interval(s): ");
 		final Text exploreIntervalText = new Text(rightComposite, SWT.BORDER);
-		exploreIntervalText.setText("12");
+		exploreIntervalText.setText("9");
 		exploreIntervalText.setLayoutData(textGD);
 
 		autoExplore = new Button(rightComposite, SWT.PUSH);

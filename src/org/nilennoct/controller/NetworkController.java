@@ -39,8 +39,8 @@ public class NetworkController {
 	private String password = null;
 
 //	String host = "game1-cbt.ma.sdo.com";
-//	String hostport = "game.ma.mobimon.com.tw:10001";
-	private final String hostport = "game1-CBT.ma.sdo.com:10001";
+	String hostport = "game.ma.mobimon.com.tw:10001";
+//	private final String hostport = "game1-CBT.ma.sdo.com:10001";
 //	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
 	private final String DefaultUserAgent = "Million/1.0.1 (iPad; iPad2,1; 6.1)";
 //	String baseKey = "rBwj1MIAivVN222b";
@@ -63,8 +63,8 @@ public class NetworkController {
 	public int minAreaID = 1000;
 	public boolean nextFloor = false;
 
-	public int fairyInterval = 120000;
-	public int exploreInterval = 12000;
+	public int fairyInterval = 60000;
+	public int exploreInterval = 9000;
 	public int checkLoginInterval = 600000; // 3 minutes
 
 	public static StateEnum state = StateEnum.LOGOUT;
@@ -253,7 +253,7 @@ public class NetworkController {
 					break;
 				}
 				case 8000: {
-					if (msg.indexOf("超过上限") >= 0) {
+					if (msg.contains("超过上限")) {
 						setState(StateEnum.OVERFLOW);
 					}
 					break;
@@ -280,7 +280,7 @@ public class NetworkController {
 			@Override
 			public void run() {
 				try {
-					fairyselect().mainmenu(true);
+					mainmenu(true);
 				} catch (InterruptedException e) {
 					exception[0] = e;
 				}
@@ -442,17 +442,17 @@ public class NetworkController {
 		if ("".equals(areaID) || "".equals(floorID)) {
 			return this;
 		}
-		else if (state != StateEnum.FLOOR && ! next_floor) {
-			if (state != StateEnum.GETFLOOR && state != StateEnum.EXPLORE && state != StateEnum.AUTOEXPLORE) {
-				try {
-					mainmenu(false);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-
-			area(false).floor(false);
-		}
+//		else if (state != StateEnum.FLOOR && ! next_floor) {
+//			if (state != StateEnum.GETFLOOR && state != StateEnum.EXPLORE && state != StateEnum.AUTOEXPLORE) {
+//				try {
+//					mainmenu(false);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//
+//			area(false).floor(false);
+//		}
 
 		System.out.println("get_floor, areaID: " + areaID + ", floorID: " + floorID);
 		try {

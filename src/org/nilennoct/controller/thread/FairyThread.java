@@ -29,7 +29,7 @@ public class FairyThread extends Thread {
 
 				NetworkController.setState(StateEnum.AUTOFAIRY);
 				System.out.println(NetworkController.state);
-				nc.updateAPBC();    // fairyselect & mainmenu
+				nc.updateAPBC();    // mainmenu
 
 				if ( ! nc.fairyselectAuto()) {
 					System.out.println("Auto Attack failed, wait for " + nc.fairyInterval / 1000 + "s");
@@ -44,19 +44,19 @@ public class FairyThread extends Thread {
 				if (NetworkController.offline) {
 					synchronized (nc) {
 						if (NetworkController.state == StateEnum.OVERFLOW) {
-							System.out.println("FairyThread end.");
+							System.out.println("[" + NetworkController.state + "]FairyThread end.");
 							return;
 						}
 						try {
 							nc.wait();
 						} catch (InterruptedException e1) {
-							System.out.println("ExploreThread end.");
+							System.out.println("[" + NetworkController.state + "]FairyThread end.");
 							return;
 						}
 					}
 				}
 				else {
-					System.out.println("FairyThread end.");
+					System.out.println("[" + NetworkController.state + "]FairyThread end.");
 					if (NetworkController.state == StateEnum.AUTOFAIRY) {
 						NetworkController.setState(StateEnum.MAIN);
 					}

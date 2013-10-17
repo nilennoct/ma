@@ -21,6 +21,10 @@ public class LoginThread extends Thread {
 	public void run() {
 		while (true) {
 			System.out.println("LoginThread start");
+			if ( ! NetworkController.offline) {
+				continue;
+			}
+
 			try {
 				if (NetworkController.state == StateEnum.MAINTAIN) {
 					while (true) {
@@ -47,7 +51,7 @@ public class LoginThread extends Thread {
 				}
 			}
 			catch (InterruptedException e) {
-				System.out.println("LoginThread end.");
+				System.out.println("[" + NetworkController.state + "]LoginThread end.");
 				return;
 			}
 		}

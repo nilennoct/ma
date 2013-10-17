@@ -72,7 +72,7 @@ public class FairyComposite extends Composite {
 		Label fairyIntervalLabel = new Label(rightComposite, SWT.CENTER);
 		fairyIntervalLabel.setText("Scan interval(s): ");
 		final Text fairyIntervalText = new Text(rightComposite, SWT.BORDER);
-		fairyIntervalText.setText("120");
+		fairyIntervalText.setText("60");
 		fairyIntervalText.setLayoutData(textGD);
 
 		start = new Button(rightComposite, SWT.PUSH);
