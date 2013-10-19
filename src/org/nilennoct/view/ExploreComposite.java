@@ -2,6 +2,8 @@ package org.nilennoct.view;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -71,7 +73,7 @@ public class ExploreComposite extends Composite {
 		Label startAPLabel = new Label(rightComposite, SWT.CENTER);
 		startAPLabel.setText("Start AP: ");
 		final Text startAPText = new Text(rightComposite, SWT.BORDER);
-		startAPText.setText("80");
+		startAPText.setText("60");
 		startAPText.setLayoutData(textGD);
 
 		Label minAIDLabel = new Label(rightComposite, SWT.CENTER);
@@ -217,6 +219,45 @@ public class ExploreComposite extends Composite {
 				autoExplore.setEnabled(true);
 			}
 		});
+
+		minAIDText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				try {
+					nc.minAreaID = Integer.parseInt(((Text) e.getSource()).getText());
+				}
+				catch (Exception exception) {
+					nc.minAreaID = 1000;
+				}
+				System.out.println("minAreaID: " + nc.minAreaID);
+			}
+		});
+
+		startAPText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				try {
+					nc.startAP = Integer.parseInt(((Text) e.getSource()).getText());
+				}
+				catch (Exception exception) {
+					nc.startAP = 60;
+				}
+				System.out.println("startAP: " + nc.startAP);
+			}
+		});
+
+		exploreIntervalText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				try {
+					nc.exploreInterval = Integer.parseInt(((Text) e.getSource()).getText());
+				}
+				catch (Exception exception) {
+					nc.exploreInterval = 900;
+				}
+				System.out.println("exploreInterval: " + nc.exploreInterval);
+			}
+		});
 	}
 
 	public Table getAreaTable() {
@@ -250,7 +291,7 @@ public class ExploreComposite extends Composite {
 	}
 
 	public boolean hasFloor(int floorIndex) {
-		return floorTable.getItem(floorIndex) != null;
+		return floorTable.getItemCount() >= floorIndex + 1;
 	}
 
 }

@@ -1,6 +1,8 @@
 package org.nilennoct.view;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -143,6 +145,18 @@ public class FairyComposite extends Composite {
 				NetworkController.fairyThread.interrupt();
 				stop.setEnabled(false);
 				start.setEnabled(true);
+			}
+		});
+
+		fairyIntervalText.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				try {
+					nc.fairyInterval = Integer.parseInt(((Text) e.getSource()).getText());
+				} catch (Exception exception) {
+					nc.fairyInterval = 900;
+				}
+				System.out.println("fairyInterval: " + nc.fairyInterval);
 			}
 		});
 	}

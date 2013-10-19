@@ -2,6 +2,7 @@ package org.nilennoct.controller;
 
 import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
+import org.nilennoct.model.FriendInfo;
 import org.nilennoct.model.UserInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -99,6 +100,17 @@ public class XMLParser {
 		userInfo.bc_max = Integer.parseInt(getNodeValue(user, "max"));
 
 		return userInfo;
+	}
+
+	public static FriendInfo getFriendInfo(Element user) {
+		FriendInfo friendInfo = new FriendInfo();
+//		Node fairy = doc.getElementsByTagName("fairy").item(0);
+		friendInfo.id = getNodeValue(user, "id");
+		friendInfo.level = getNodeValue(user, "town_level");
+		friendInfo.last_login = getNodeValue(user, "last_login");
+		friendInfo.name = getNodeValue(user, "name") + " Lv." + friendInfo.level;
+
+		return friendInfo;
 	}
 
 	public static FairyInfo getFairyInfo(Document doc) {

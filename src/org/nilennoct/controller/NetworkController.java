@@ -9,6 +9,7 @@ import org.nilennoct.controller.thread.FairyThread;
 import org.nilennoct.controller.thread.LoginThread;
 import org.nilennoct.model.FairyEvent;
 import org.nilennoct.model.FairyInfo;
+import org.nilennoct.model.FriendInfo;
 import org.nilennoct.model.UserInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,11 +58,11 @@ public class NetworkController {
 	private ArrayList<String> failedFairyList = new ArrayList<String>();
 
 	public int minAP = 6;
-	public int startAP = 80;
+	public int startAP = 60;
 	public int minBC = 2;
-	public boolean nextArea = false;
+	public boolean nextArea = true;
 	public int minAreaID = 1000;
-	public boolean nextFloor = false;
+	public boolean nextFloor = true;
 
 	public int fairyInterval = 60000;
 	public int exploreInterval = 9000;
@@ -506,7 +507,7 @@ public class NetworkController {
 			connection.connect();
 
 //			System.out.println("Code: " + connection.getResponseCode());
-
+//
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
 //			String xml = "";
@@ -813,7 +814,147 @@ public class NetworkController {
 		return nc;
 	}
 
+	public NetworkController friendlist() {
+		System.out.println("friendlist");
+		try {
+			HttpURLConnection connection = newPostConnection("/connect/app/menu/friendlist?cyt=1");
+			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			String content = "&move=1";
+			out.writeBytes(content);
+			connection.connect();
 
+			Document doc = XMLParser.parseXML(connection.getInputStream());
+
+			if ( ! checkCode(doc)) {
+				return nc;
+			}
+
+
+			NodeList notice_list = doc.getElementsByTagName("user");
+			Table friendTable = uc.getFriendComposite().getFriendTable();
+			friendTable.removeAll();
+			for (int i = 0; i < notice_list.getLength(); ++i) {
+				TableItem noticeItem = new TableItem(friendTable, SWT.CHECK);
+				FriendInfo friendInfo = XMLParser.getFriendInfo((Element) notice_list.item(i));
+
+				noticeItem.setText(0, friendInfo.name);
+				noticeItem.setText(1, friendInfo.last_login);
+				noticeItem.setData(friendInfo);
+			}
+			uc.getFriendComposite().resizeFriendTable();
+
+			connection.disconnect();
+
+			Thread.sleep(1000);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return nc;
+	}
+
+	public NetworkController friend_notice() {
+		System.out.println("friend_notice");
+		try {
+			HttpURLConnection connection = newPostConnection("/connect/app/menu/friend_notice?cyt=1");
+			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			String content = "&move=1";
+			out.writeBytes(content);
+			connection.connect();
+
+			Document doc = XMLParser.parseXML(connection.getInputStream());
+
+			if ( ! checkCode(doc)) {
+				return nc;
+			}
+
+
+			NodeList notice_list = doc.getElementsByTagName("user");
+			Table noticeTable = uc.getFriendComposite().getNoticeTable();
+			noticeTable.removeAll();
+			for (int i = 0; i < notice_list.getLength(); ++i) {
+				TableItem noticeItem = new TableItem(noticeTable, SWT.CHECK);
+				FriendInfo friendInfo = XMLParser.getFriendInfo((Element) notice_list.item(i));
+
+				noticeItem.setText(0, friendInfo.name);
+				noticeItem.setText(1, friendInfo.last_login);
+				noticeItem.setData(friendInfo);
+			}
+			uc.getFriendComposite().resizeNoticeTable();
+
+			connection.disconnect();
+
+			Thread.sleep(1000);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return nc;
+	}
+
+	public boolean remove_friend(String user_id) {
+		System.out.println("remove_friend");
+		boolean success = false;
+		try {
+			HttpURLConnection connection = newPostConnection("/connect/app/friend/remove_friend?cyt=1");
+			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			String content = "&dialog=0&user_id=" + user_id;
+			out.writeBytes(content);
+			connection.connect();
+
+			Document doc = XMLParser.parseXML(connection.getInputStream());
+
+			if ( ! checkCode(doc)) {
+				return false;
+			}
+
+			success = "1".equals(XMLParser.getNodeValue(doc, "success"));
+			String message = XMLParser.getNodeValue(doc, "message");
+			uc.log("[" + success + "]" + message);
+
+			connection.disconnect();
+
+			Thread.sleep(1000);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return success;
+	}
+
+	public boolean approve_friend(String user_id) {
+		System.out.println("approve_friend");
+		boolean success = false;
+		try {
+			HttpURLConnection connection = newPostConnection("/connect/app/friend/approve_friend?cyt=1");
+			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			String content = "&dialog=0&user_id=" + user_id;
+			out.writeBytes(content);
+			connection.connect();
+
+			Document doc = XMLParser.parseXML(connection.getInputStream());
+
+			if ( ! checkCode(doc)) {
+				return false;
+			}
+
+			success = "1".equals(XMLParser.getNodeValue(doc, "success"));
+			String message = XMLParser.getNodeValue(doc, "message");
+			uc.log("[" + success + "]" + message);
+
+			connection.disconnect();
+
+			Thread.sleep(1000);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return success;
+	}
 
 	public boolean mainmenuAuto() throws InterruptedException {
 		System.out.println("[Auto]mainmenu");
