@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -29,8 +30,12 @@ import java.util.ArrayList;
  */
 public class NetworkController {
 	private static NetworkController nc = null;
-	private final CookieManager cookieManager = new CookieManager();
+	private CookieManager cookieManager = null;
 	private static final UIController uc = UIController.getInstance();
+
+	private HttpURLConnection connection = null;
+	private int connectionTimeout = 15000;
+	private int readTimeout = 30000;
 
 	public static ExploreThread exploreThread;
 	public static FairyThread fairyThread;
@@ -165,9 +170,9 @@ public class NetworkController {
 		}
 	}
 
-	private HttpURLConnection newPostConnection(String urlPart) throws Exception{
+	private synchronized HttpURLConnection newPostConnection(String urlPart) throws Exception{
 		URL url = new URL("http://" + hostport + urlPart);
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection = (HttpURLConnection) url.openConnection();
 		connection.setDoOutput(true);
 		connection.setDoInput(true);
 		connection.setRequestMethod("POST");
@@ -177,25 +182,82 @@ public class NetworkController {
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setRequestProperty("Accept-Language", "zh-cn");
 		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setConnectTimeout(connectionTimeout);
+		connection.setReadTimeout(readTimeout);
 
 		cookieManager.setCookies(connection);
 
 		return connection;
 	}
 
+	public Document connect(String urlPart, String parameter) throws Exception {
+		URL url = new URL("http://" + hostport + urlPart);
+
+		connection = (HttpURLConnection) url.openConnection();
+		connection.setDoOutput(true);
+		connection.setDoInput(true);
+		connection.setRequestMethod("POST");
+		connection.setUseCaches(false);
+		connection.setInstanceFollowRedirects(true);
+		connection.setRequestProperty("Host", hostport);
+		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		connection.setRequestProperty("Accept-Language", "zh-cn");
+		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setConnectTimeout(connectionTimeout);
+		connection.setReadTimeout(readTimeout);
+
+		cookieManager.setCookies(connection);
+//		HttpURLConnection connection = newPostConnection(url);
+		DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+
+		out.writeBytes(parameter);
+		connection.connect();
+
+		Document doc = XMLParser.parseXML(connection.getInputStream());
+
+		connection.disconnect();
+
+		return doc;
+	}
+
+
+
+	public Document connect(String urlPart) throws Exception {
+		URL url = new URL("http://" + hostport + urlPart);
+
+		connection = (HttpURLConnection) url.openConnection();
+		connection.setDoOutput(false);
+		connection.setDoInput(true);
+		connection.setRequestMethod("POST");
+		connection.setUseCaches(false);
+		connection.setInstanceFollowRedirects(true);
+		connection.setRequestProperty("Host", hostport);
+		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		connection.setRequestProperty("Accept-Language", "zh-cn");
+		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setConnectTimeout(1000);
+		connection.setReadTimeout(1000);
+
+		cookieManager.setCookies(connection);
+
+		connection.connect();
+
+		Document doc = XMLParser.parseXML(connection.getInputStream());
+
+		connection.disconnect();
+
+		return doc;
+	}
+
 	public NetworkController login() throws InterruptedException {
 		System.out.println("login");
 		state = StateEnum.MAIN;
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/login?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
+			cookieManager = new CookieManager();
 			String content = "&login_id=" + this.name + "&password=" + this.password;
 //			String content = "&login_id=" + AES.encrypt(this.name, key0) + "&password=" + AES.encrypt(this.password, key0);
 
-			out.writeBytes(content);
-			connection.connect();
-
-			System.out.println("Code: " + connection.getResponseCode());
+			Document doc = connect("/connect/app/login?cyt=1", content);
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
@@ -204,7 +266,6 @@ public class NetworkController {
 //				xml += line;
 //			}
 //			System.out.println(xml);
-			Document doc = XMLParser.parseXML(connection.getInputStream());
 
 			if ( ! checkCode(doc)) {
 				return nc;
@@ -227,15 +288,17 @@ public class NetworkController {
 			});
 
 //			in.close();
-			connection.disconnect();
 
 			Thread.sleep(1000);
+		}
+		catch (SocketTimeoutException e) {
+			e.printStackTrace();
 		}
 		catch (InterruptedException e) {
 			throw e;
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e);
 		}
 
 		return nc;
@@ -959,18 +1022,17 @@ public class NetworkController {
 	public boolean mainmenuAuto() throws InterruptedException {
 		System.out.println("[Auto]mainmenu");
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/mainmenu?cyt=1");
 
 			if ( ! checkCode(doc)) {
 				return false;
 			}
 
-			connection.disconnect();
-
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+//			return mainmenuAuto();
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -985,18 +1047,16 @@ public class NetworkController {
 	public boolean areaAuto() throws InterruptedException {
 		System.out.println("[Auto]area");
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/area?cyt=1");
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/area?cyt=1");
 
 			if ( ! checkCode(doc)) {
 				return false;
 			}
 
-			connection.disconnect();
-
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1012,10 +1072,7 @@ public class NetworkController {
 		System.out.println("[Auto]area_next");
 
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/area?cyt=1");
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/area?cyt=1");
 
 			if ( ! checkCode(doc)) {
 				return nc;
@@ -1037,9 +1094,10 @@ public class NetworkController {
 				areaID = String.valueOf(nextAreaID);
 			}
 
-			connection.disconnect();
-
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return nc;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1058,22 +1116,17 @@ public class NetworkController {
 
 		System.out.println("[Auto]floor, areaID: " + areaID);
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/floor?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 			String content = "&area_id=" + areaID;
-
-			out.writeBytes(content);
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
 				return false;
 			}
 
-			connection.disconnect();
-
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1092,14 +1145,8 @@ public class NetworkController {
 
 		System.out.println("[Auto]floor, areaID: " + areaID);
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/floor?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 			String content = "&area_id=" + areaID;
-
-			out.writeBytes(content);
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
 				return nc;
@@ -1111,6 +1158,9 @@ public class NetworkController {
 			connection.disconnect();
 
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return this;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1128,16 +1178,13 @@ public class NetworkController {
 			return false;
 		}
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/get_floor?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
-
-			out.writeBytes(content);
-			connection.connect();
-
-			connection.disconnect();
+			Document doc = connect("/connect/app/exploration/get_floor?cyt=1", content);
 
 			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1156,24 +1203,8 @@ public class NetworkController {
 		}
 		String newFloorID = this.floorID;
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/explore?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
-
-			out.writeBytes(content);
-			connection.connect();
-
-//			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//			String line;
-//			String xml = "";
-//			while ((line = in.readLine()) != null) {
-//				xml += line;
-//			}
-//			System.out.println(xml);
-//			in.close();
-//
-//			Document doc = XMLParser.parseXML(xml);
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/explore?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
 				return null;
@@ -1202,8 +1233,6 @@ public class NetworkController {
 			}
 			uc.logInThread(log + "AP" + userInfo.ap_current);
 
-			connection.disconnect();
-
 			if (progress.equals("100")) {
 				Node next_floor = doc.getElementsByTagName("next_floor").item(0);
 				boolean changeArea = doc.getElementsByTagName("bonus_list").getLength() > 0;
@@ -1225,6 +1254,9 @@ public class NetworkController {
 			}
 //			Thread.sleep(3000);
 		}
+		catch (SocketTimeoutException e) {
+			return newFloorID;
+		}
 		catch (InterruptedException e) {
 			throw e;
 		}
@@ -1238,10 +1270,7 @@ public class NetworkController {
 	public boolean fairyselectAuto() throws InterruptedException {
 		System.out.println("[Auto]fairyselectAuto");
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/menu/fairyselect?cyt=1");
-			connection.connect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/menu/fairyselect?cyt=1");
 
 			if ( ! checkCode(doc)) {
 				return false;
@@ -1306,9 +1335,10 @@ public class NetworkController {
 			}
 			System.out.println(failedFairyList);
 
-			connection.disconnect();
-
 //			Thread.sleep(3000);
+		}
+		catch (SocketTimeoutException e) {
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1330,15 +1360,8 @@ public class NetworkController {
 		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
 
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/exploration/fairybattle?cyt=1");
-			DataOutputStream out = new DataOutputStream(connection.getOutputStream());
 			String content = "&serial_id=" + sid + "&user_id=" + uid;
-			out.writeBytes(content);
-			connection.connect();
-
-			connection.disconnect();
-
-			Document doc = XMLParser.parseXML(connection.getInputStream());
+			Document doc = connect("/connect/app/exploration/fairybattle?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
 				return false;
@@ -1368,6 +1391,9 @@ public class NetworkController {
 			if (winner == 0) {
 				fairy_lose(sid, uid);
 			}
+		}
+		catch (SocketTimeoutException e) {
+			return false;
 		}
 		catch (InterruptedException e) {
 			throw e;

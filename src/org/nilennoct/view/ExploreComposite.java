@@ -126,7 +126,8 @@ public class ExploreComposite extends Composite {
 				TableItem selected = areaTable.getSelection()[0];
 				nc.setAreaID(selected.getText(0));
 				nc.setFloorID("", 0);
-				nc.area(false).floor(true);
+//				nc.area(false).floor(true);
+				nc.floor(true);
 			}
 		});
 
@@ -195,7 +196,7 @@ public class ExploreComposite extends Composite {
 					nc.exploreInterval = Integer.parseInt(exploreIntervalText.getText()) * 1000;
 				}
 				catch (Exception e) {
-					nc.exploreInterval = 5000;
+					nc.exploreInterval = 9000;
 				}
 				try {
 					nc.minAreaID = Integer.parseInt(minAIDText.getText());
@@ -250,10 +251,10 @@ public class ExploreComposite extends Composite {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				try {
-					nc.exploreInterval = Integer.parseInt(((Text) e.getSource()).getText());
+					nc.exploreInterval = Integer.parseInt(((Text) e.getSource()).getText()) * 1000;
 				}
 				catch (Exception exception) {
-					nc.exploreInterval = 900;
+					nc.exploreInterval = 9000;
 				}
 				System.out.println("exploreInterval: " + nc.exploreInterval);
 			}
