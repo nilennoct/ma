@@ -28,7 +28,7 @@ public class FairyThread extends Thread {
 				}
 
 				NetworkController.setState(StateEnum.AUTOFAIRY);
-				System.out.println(NetworkController.state);
+//				System.out.println(NetworkController.state);
 				nc.updateAPBC();    // mainmenu
 
 				if ( ! nc.fairyselectAuto()) {
@@ -58,7 +58,7 @@ public class FairyThread extends Thread {
 				else {
 					System.out.println("[" + NetworkController.state + "]FairyThread end.");
 					if (NetworkController.state == StateEnum.AUTOFAIRY) {
-						NetworkController.setState(StateEnum.MAIN);
+						NetworkController.setState(StateEnum.FAIRYSELECT);
 					}
 					return;
 				}

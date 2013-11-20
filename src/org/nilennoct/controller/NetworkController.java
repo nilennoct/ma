@@ -34,8 +34,10 @@ public class NetworkController {
 	private static final UIController uc = UIController.getInstance();
 
 	private HttpURLConnection connection = null;
-	private int connectionTimeout = 15000;
-	private int readTimeout = 30000;
+	private int connectionTimeout = 10000;
+	private int readTimeout = 15000;
+	private int retryCount = 0;
+	final private int RetryLimit = 2;
 
 	public static ExploreThread exploreThread;
 	public static FairyThread fairyThread;
@@ -134,7 +136,7 @@ public class NetworkController {
 			return;
 		}
 		NetworkController.state = state;
-//		System.out.println(Thread.currentThread().getName());
+		System.out.println(Thread.currentThread().getName() + " set state to " + state);
 		switch (state) {
 			case LOGOUT: {
 				offline = true;
@@ -190,7 +192,7 @@ public class NetworkController {
 		return connection;
 	}
 
-	public Document connect(String urlPart, String parameter) throws Exception {
+	public synchronized Document connect(String urlPart, String parameter) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
 		connection = (HttpURLConnection) url.openConnection();
@@ -222,7 +224,7 @@ public class NetworkController {
 
 
 
-	public Document connect(String urlPart) throws Exception {
+	public synchronized Document connect(String urlPart) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
 		connection = (HttpURLConnection) url.openConnection();
@@ -292,13 +294,24 @@ public class NetworkController {
 			Thread.sleep(1000);
 		}
 		catch (SocketTimeoutException e) {
-			e.printStackTrace();
+			System.out.println(e);
+			synchronized (this) {
+				System.out.println(retryCount);
+				if (retryCount < RetryLimit) {
+					++retryCount;
+					return login();
+				}
+				else {
+					retryCount = 0;
+					return nc;
+				}
+			}
 		}
 		catch (InterruptedException e) {
 			throw e;
 		}
 		catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 
 		return nc;
@@ -358,8 +371,8 @@ public class NetworkController {
 	public NetworkController mainmenu(boolean refreshStatus) throws InterruptedException {
 		System.out.println("mainmenu");
 		try {
-			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
-			connection.connect();
+//			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
+//			connection.connect();
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
@@ -368,24 +381,32 @@ public class NetworkController {
 //				xml += line;
 //			}
 //			System.out.println(xml);
+			Document doc = connect("/connect/app/mainmenu?cyt=1");
+
+			if ( ! checkCode(doc)) {
+				return nc;
+			}
+
 			if (refreshStatus) {
-				Document doc = XMLParser.parseXML(connection.getInputStream());
-
-				if ( ! checkCode(doc)) {
-					return nc;
-				}
-
-//				synchronized (this) {
-//					state = StateEnum.MAIN;
-//				}
-
 				userInfo = XMLParser.getUserInfo(doc).updateAPBC();
 			}
 
 //			in.close();
-			connection.disconnect();
 
 			Thread.sleep(1000);
+		}
+		catch (SocketTimeoutException e) {
+			System.out.println(e);
+			synchronized (this) {
+				if (retryCount < RetryLimit) {
+					++retryCount;
+					return mainmenu(true);
+				}
+				else {
+					retryCount = 0;
+					return nc;
+				}
+			}
 		}
 		catch (InterruptedException e) {
 			throw e;
@@ -1032,6 +1053,7 @@ public class NetworkController {
 		}
 		catch (SocketTimeoutException e) {
 //			return mainmenuAuto();
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {
@@ -1056,6 +1078,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {
@@ -1097,6 +1120,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return nc;
 		}
 		catch (InterruptedException e) {
@@ -1126,6 +1150,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {
@@ -1160,6 +1185,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return this;
 		}
 		catch (InterruptedException e) {
@@ -1184,6 +1210,7 @@ public class NetworkController {
 			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {
@@ -1255,6 +1282,7 @@ public class NetworkController {
 //			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return newFloorID;
 		}
 		catch (InterruptedException e) {
@@ -1304,6 +1332,7 @@ public class NetworkController {
 						else {
 							retry = true;
 							while (retry) {
+//								System.out.println(state);
 								if (++count > 3) {
 									if ( ! failedFairyList.contains(fairyID)) {
 										failedFairyList.add(fairyID);
@@ -1338,6 +1367,7 @@ public class NetworkController {
 //			Thread.sleep(3000);
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {
@@ -1393,6 +1423,7 @@ public class NetworkController {
 			}
 		}
 		catch (SocketTimeoutException e) {
+			System.out.println(e);
 			return false;
 		}
 		catch (InterruptedException e) {

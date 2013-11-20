@@ -21,9 +21,6 @@ public class LoginThread extends Thread {
 	public void run() {
 		while (true) {
 			System.out.println("LoginThread start");
-			if ( ! NetworkController.offline) {
-				continue;
-			}
 
 			try {
 				if (NetworkController.state == StateEnum.MAINTAIN) {

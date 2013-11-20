@@ -34,11 +34,11 @@ public class ExploreThread extends Thread {
 			System.out.println("ExploreThread start");
 			try {
 				while (NetworkController.state == StateEnum.AUTOFAIRY || NetworkController.state == StateEnum.FAIRYBATTLE) {
-					System.out.println(NetworkController.state);
+//					System.out.println(NetworkController.state);
 					System.out.println("Wait for fairy");
 					sleep(5000);
 				}
-				System.out.println(NetworkController.state);
+//				System.out.println(NetworkController.state);
 				if (NetworkController.state != StateEnum.GETFLOOR && NetworkController.state != StateEnum.AUTOEXPLORE) {
 					if(NetworkController.state != StateEnum.MAIN) {
 						nc.mainmenuAuto();
@@ -54,7 +54,7 @@ public class ExploreThread extends Thread {
 				running = running || nc.userInfo.ap_current >= nc.startAP;
 
 				while (running) {
-					System.out.println(NetworkController.state);
+//					System.out.println(NetworkController.state);
 					if (NetworkController.state != StateEnum.AUTOEXPLORE) {
 						interrupted = true;
 						break;
