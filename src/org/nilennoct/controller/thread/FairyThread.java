@@ -3,6 +3,8 @@ package org.nilennoct.controller.thread;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.StateEnum;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -11,6 +13,7 @@ import org.nilennoct.controller.StateEnum;
  */
 public class FairyThread extends Thread {
 	private final NetworkController nc;
+	private boolean running = true;
 
 	public FairyThread(NetworkController nc) {
 		super("FairyThread");
@@ -19,9 +22,11 @@ public class FairyThread extends Thread {
 	}
 
 	public void run() {
-		while (true) {
-			System.out.println("FairyThread start");
+		while (running) {
 			try {
+				System.out.println("FairyThread start");
+				nc.lastFairyTime = new Date().getTime();
+
 				while (NetworkController.state == StateEnum.FAIRYBATTLE) {
 					System.out.println("Wait for fairybattle.");
 					sleep(5000);
@@ -65,5 +70,15 @@ public class FairyThread extends Thread {
 			}
 		}
 //		System.out.println("FairyThread end.");
+	}
+
+	public void terminate() {
+		running = false;
+		this.interrupt();
+		try {
+			this.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }

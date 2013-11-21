@@ -3,6 +3,8 @@ package org.nilennoct.controller.thread;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.StateEnum;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -19,10 +21,27 @@ public class LoginThread extends Thread {
 	}
 
 	public void run() {
+		long currentTime;
 		while (true) {
 			System.out.println("LoginThread start");
 
 			try {
+				currentTime = new Date().getTime();
+				System.out.println(currentTime - nc.lastFairyTime);
+				System.out.println(NetworkController.fairyThread);
+				if (currentTime - nc.lastFairyTime > nc.fairyInterval + 300000 && NetworkController.fairyThread != null && NetworkController.fairyThread.isAlive()) {
+					NetworkController.fairyThread.terminate();
+					System.out.println("FairyThread Timeout");
+					NetworkController.fairyThread = new FairyThread(nc);
+					NetworkController.fairyThread.start();
+				}
+				if (currentTime - nc.lastExploreTime > nc.startAP * 180000 + 300000 && NetworkController.exploreThread != null && NetworkController.exploreThread.isAlive()) {
+					NetworkController.exploreThread.terminate();
+					System.out.println("ExploreThread Timeout");
+					NetworkController.exploreThread = new ExploreThread(nc);
+					NetworkController.exploreThread.start();
+				}
+
 				if (NetworkController.state == StateEnum.MAINTAIN) {
 					while (true) {
 						sleep(1800000);

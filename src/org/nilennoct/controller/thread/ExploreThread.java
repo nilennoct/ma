@@ -3,6 +3,8 @@ package org.nilennoct.controller.thread;
 import org.nilennoct.controller.NetworkController;
 import org.nilennoct.controller.StateEnum;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -12,6 +14,7 @@ import org.nilennoct.controller.StateEnum;
 public class ExploreThread extends Thread {
 	private final NetworkController nc;
 
+	private boolean threadRunning = true;
 	private boolean running = false;
 	private boolean interrupted = false;
 
@@ -30,8 +33,9 @@ public class ExploreThread extends Thread {
 	@SuppressWarnings("ConstantConditions")
 	public void run() {
 //		Random random = new Random();
-		while (true) {
+		while (threadRunning) {
 			System.out.println("ExploreThread start");
+			nc.lastExploreTime = new Date().getTime();
 			try {
 				while (NetworkController.state == StateEnum.AUTOFAIRY || NetworkController.state == StateEnum.FAIRYBATTLE) {
 //					System.out.println(NetworkController.state);
@@ -104,6 +108,16 @@ public class ExploreThread extends Thread {
 					return;
 				}
 			}
+		}
+	}
+
+	public void terminate() {
+		threadRunning = false;
+		this.interrupt();
+		try {
+			this.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 }

@@ -152,9 +152,9 @@ public class FairyComposite extends Composite {
 			@Override
 			public void modifyText(ModifyEvent e) {
 				try {
-					nc.fairyInterval = Integer.parseInt(((Text) e.getSource()).getText());
+					nc.fairyInterval = Integer.parseInt(((Text) e.getSource()).getText()) * 1000;
 				} catch (Exception exception) {
-					nc.fairyInterval = 900;
+					nc.fairyInterval = 60000;
 				}
 				System.out.println("fairyInterval: " + nc.fairyInterval);
 			}

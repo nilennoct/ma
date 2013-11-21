@@ -39,6 +39,9 @@ public class NetworkController {
 	private int retryCount = 0;
 	final private int RetryLimit = 2;
 
+	public long lastFairyTime = 0;
+	public long lastExploreTime = 0;
+
 	public static ExploreThread exploreThread;
 	public static FairyThread fairyThread;
 	public static LoginThread loginThread;
@@ -77,7 +80,7 @@ public class NetworkController {
 
 	public static StateEnum state = StateEnum.LOGOUT;
 	public static StateEnum tmpState;
-	public static boolean offline = true;
+	public static boolean offline = false;
 
 	public static void main(String[] args) {
 		NetworkController networkController = new NetworkController();
@@ -352,20 +355,16 @@ public class NetworkController {
 	}
 
 	public void updateAPBC() throws InterruptedException {
-		final InterruptedException[] exception = new InterruptedException[1];
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					mainmenu(true);
-				} catch (InterruptedException e) {
-					exception[0] = e;
-				}
-			}
-		});
-		if (exception[0] != null) {
-			throw exception[0];
+//		final InterruptedException[] exception = new InterruptedException[1];
+		try {
+			mainmenu(true);
+		} catch (InterruptedException e) {
+//			exception[0] = e;
+			throw e;
 		}
+//		if (exception[0] != null) {
+//			throw exception[0];
+//		}
 	}
 
 	public NetworkController mainmenu(boolean refreshStatus) throws InterruptedException {
@@ -1399,7 +1398,7 @@ public class NetworkController {
 			e.printStackTrace();
 		}
 		finally {
-			if (tmpState != StateEnum.AUTOFAIRY) {
+			if (tmpState != StateEnum.AUTOFAIRY && tmpState != StateEnum.FAIRYBATTLE) {
 				setState(tmpState);
 			}
 		}
