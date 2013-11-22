@@ -1,5 +1,19 @@
 package org.nilennoct.controller;
 
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpHost;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
@@ -17,10 +31,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,12 +48,6 @@ public class NetworkController {
 	private static NetworkController nc = null;
 	private CookieManager cookieManager = null;
 	private static final UIController uc = UIController.getInstance();
-
-	private HttpURLConnection connection = null;
-	private int connectionTimeout = 15000;
-	private int readTimeout = 30000;
-	private int retryCount = 0;
-	final private int RetryLimit = 2;
 
 	public long lastFairyTime = 0;
 	public long lastExploreTime = 0;
@@ -51,12 +61,31 @@ public class NetworkController {
 
 //	String host = "game1-cbt.ma.sdo.com";
 	String hostport = "game.ma.mobimon.com.tw:10001";
+//	String host = "game.ma.mobimon.com.tw";
+//	int port = 10001;
 //	private final String hostport = "game1-CBT.ma.sdo.com:10001";
-//	private final String DefaultUserAgent = "Million/100 (c1lgt; c1lgt; 4.1.2) samsung/c1lgt/c1lgt:4.1.2/JZO54K/E210LKLJLL7:user/release-keys GooglePlay";
-	private final String DefaultUserAgent = "Million/1.0.1 (iPad; iPad2,1; 6.1)";
+	private final String DefaultUserAgent = "Mi11ion/1.0.2 (iPad; iPad2,1; 6.1) ";
 //	String baseKey = "rBwj1MIAivVN222b";
 //	String key12 = baseKey;
 //	String key0 = baseKey;
+
+//	private Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8087));
+	//	private Proxy proxy = null;
+	private HttpURLConnection connection = null;
+	private int connectionTimeout = 15000;
+	private int readTimeout = 30000;
+	private int retryCount = 0;
+	final private int RetryLimit = 2;
+
+	public String proxyHost = "127.0.0.1";
+	public int proxyPort = 8087;
+	public boolean usingProxy = false;
+
+	private RequestConfig requestConfig;
+	private ArrayList<BasicHeader> defaultHeaders = new ArrayList<BasicHeader>();
+	private CloseableHttpClient client = null;
+	private CookieStore cookieStore =  new BasicCookieStore();
+//	private HttpHost httpHost = new HttpHost(host, port);
 
 	public UserInfo userInfo;
 	private String areaID = "1";
@@ -82,16 +111,47 @@ public class NetworkController {
 	public static StateEnum tmpState;
 	public static boolean offline = false;
 
-	public static void main(String[] args) {
-		NetworkController networkController = new NetworkController();
-		try {
-			networkController.login();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	private NetworkController() {
+//		System.setProperty("http.proxySet", "false");
+//		System.setProperty("http.proxyHost", "127.0.0.1");
+//		System.setProperty("http.proxyPort", "8087");
+
+		requestConfig = RequestConfig.custom()
+				.setConnectionRequestTimeout(connectionTimeout)
+				.setSocketTimeout(readTimeout)
+				.setRedirectsEnabled(true).build();
+
+		defaultHeaders.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded"));
+		defaultHeaders.add(new BasicHeader(HttpHeaders.ACCEPT_LANGUAGE, "zh-cn"));
+		defaultHeaders.add(new BasicHeader(HttpHeaders.ACCEPT, "*/*"));
+		defaultHeaders.add(new BasicHeader(HttpHeaders.CONNECTION, "keep-alive"));
+		defaultHeaders.add(new BasicHeader(HttpHeaders.USER_AGENT, DefaultUserAgent));
+
+		createHttpClient();
+
 	}
 
-	private NetworkController() {}
+	public void createHttpClient() {
+		System.out.println(usingProxy);
+		if (client != null) {
+			try {
+				client.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		HttpClientBuilder builder = HttpClients.custom();
+		if (usingProxy) {
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+			builder = builder.setProxy(proxy);
+		}
+		client = builder
+				.setDefaultRequestConfig(requestConfig)
+				.setDefaultCookieStore(cookieStore)
+				.setDefaultHeaders(defaultHeaders)
+//				.setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
+				.build();
+	}
 
 	@Override
 	public void finalize() {
@@ -106,6 +166,7 @@ public class NetworkController {
 			loginThread.interrupt();
 		}
 		try {
+			client.close();
 			super.finalize();
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
@@ -181,33 +242,62 @@ public class NetworkController {
 		connection.setDoOutput(true);
 		connection.setDoInput(true);
 		connection.setRequestMethod("POST");
-		connection.setUseCaches(false);
+//		connection.setUseCaches(false);
 		connection.setInstanceFollowRedirects(true);
 		connection.setRequestProperty("Host", hostport);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setRequestProperty("Accept-Language", "zh-cn");
-		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setRequestProperty("Accept", "* /*");
+		connection.setRequestProperty("User-Agent", DefaultUserAgent);
 		connection.setConnectTimeout(connectionTimeout);
 		connection.setReadTimeout(readTimeout);
 
-		cookieManager.setCookies(connection);
+//		cookieManager.setCookies(connection);
 
 		return connection;
 	}*/
 
-	public synchronized Document connect(String urlPart, String parameter) throws Exception {
+	public synchronized Document connect(String urlPart) throws Exception {
+		HttpPost method = new HttpPost("http://" + hostport + urlPart);
+		CloseableHttpResponse response = client.execute(method);
+//		ContentType contentType = ContentType.getOrDefault(response.getEntity());
+//		String charset = contentType.getCharset().toString();
+
+		Document doc = XMLParser.parseXML(response.getEntity().getContent());
+
+		response.close();
+
+		return doc;
+	}
+
+	public synchronized Document connect(String urlPart, List<NameValuePair> parameter) throws Exception {
+		HttpPost method = new HttpPost("http://" + hostport + urlPart);
+
+		method.setEntity(new UrlEncodedFormEntity(parameter));
+
+		CloseableHttpResponse response = client.execute(method);
+
+		Document doc = XMLParser.parseXML(response.getEntity().getContent());
+
+		response.close();
+
+		return doc;
+	}
+
+	public synchronized Document connectOld(String urlPart, String parameter) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setDoOutput(true);
 		connection.setDoInput(true);
 		connection.setRequestMethod("POST");
-		connection.setUseCaches(false);
+//		connection.setUseCaches(false);
 		connection.setInstanceFollowRedirects(true);
 		connection.setRequestProperty("Host", hostport);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setRequestProperty("Accept-Language", "zh-cn");
-		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setRequestProperty("Accept", "*/*");
+		connection.setRequestProperty("User-Agent", DefaultUserAgent);
 		connection.setConnectTimeout(connectionTimeout);
 		connection.setReadTimeout(readTimeout);
 
@@ -227,19 +317,20 @@ public class NetworkController {
 
 
 
-	public synchronized Document connect(String urlPart) throws Exception {
+	public synchronized Document connectOld(String urlPart) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setDoOutput(false);
 		connection.setDoInput(true);
 		connection.setRequestMethod("POST");
-		connection.setUseCaches(false);
+//		connection.setUseCaches(false);
 		connection.setInstanceFollowRedirects(true);
 		connection.setRequestProperty("Host", hostport);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 		connection.setRequestProperty("Accept-Language", "zh-cn");
-		connection.setRequestProperty("UserAgent", DefaultUserAgent);
+		connection.setRequestProperty("Accept", "*/*");
+		connection.setRequestProperty("User-Agent", DefaultUserAgent);
 		connection.setConnectTimeout(connectionTimeout);
 		connection.setReadTimeout(readTimeout);
 
@@ -259,8 +350,12 @@ public class NetworkController {
 		state = StateEnum.MAIN;
 		try {
 			cookieManager = new CookieManager();
-			String content = "&login_id=" + this.name + "&password=" + this.password;
+//			String content = "&login_id=" + this.name + "&password=" + this.password;
 //			String content = "&login_id=" + AES.encrypt(this.name, key0) + "&password=" + AES.encrypt(this.password, key0);
+
+			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
+			content.add(new BasicNameValuePair("login_id", this.name));
+			content.add(new BasicNameValuePair("password", this.password));
 
 			Document doc = connect("/connect/app/login?cyt=1", content);
 
@@ -283,7 +378,8 @@ public class NetworkController {
 				state = StateEnum.MAIN;
 			}
 
-			cookieManager.storeCookies(connection);
+//			cookieManager.storeCookies(connection);
+			System.out.println(cookieStore.getCookies());
 			userInfo = XMLParser.getUserInfo(doc).updateAPBCMaxInThread();
 			Display.getDefault().syncExec(new Runnable() {
 				@Override
@@ -356,12 +452,7 @@ public class NetworkController {
 
 	public void updateAPBC() throws InterruptedException {
 //		final InterruptedException[] exception = new InterruptedException[1];
-		try {
-			mainmenu(true);
-		} catch (InterruptedException e) {
-//			exception[0] = e;
-			throw e;
-		}
+		mainmenu(true);
 //		if (exception[0] != null) {
 //			throw exception[0];
 //		}
@@ -372,7 +463,8 @@ public class NetworkController {
 		try {
 //			HttpURLConnection connection = newPostConnection("/connect/app/mainmenu?cyt=1");
 //			connection.connect();
-
+//			System.out.println("Code: " + connection.getResponseCode());
+//
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
 //			String xml = "";
@@ -380,6 +472,8 @@ public class NetworkController {
 //				xml += line;
 //			}
 //			System.out.println(xml);
+//			in.close();
+//			Document doc = XMLParser.parseXML(xml);
 			Document doc = connect("/connect/app/mainmenu?cyt=1");
 
 			if ( ! checkCode(doc)) {
@@ -390,7 +484,6 @@ public class NetworkController {
 				userInfo = XMLParser.getUserInfo(doc).updateAPBCInThread();
 			}
 
-//			in.close();
 
 //			Thread.sleep(1000);
 		}
@@ -479,7 +572,9 @@ public class NetworkController {
 
 		System.out.println("floor, areaID: " + areaID);
 		try {
-			String content = "&area_id=" + areaID;
+//			String content = "&area_id=" + areaID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
+			content.add(new BasicNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -535,8 +630,13 @@ public class NetworkController {
 
 		System.out.println("get_floor, areaID: " + areaID + ", floorID: " + floorID);
 		try {
-			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
-			Document doc = connect("/connect/app/exploration/get_floor?cyt=1", content);
+//			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new BasicNameValuePair("check", "1"));
+			content.add(new BasicNameValuePair("floor_id", floorID));
+
+			connect("/connect/app/exploration/get_floor?cyt=1", content);
 
 //			int code = connection.getResponseCode();
 //			System.out.println("Code: " + code);
@@ -573,7 +673,11 @@ public class NetworkController {
 		}
 		System.out.println("explore, areaID: " + areaID + ", floorID: " + floorID);
 		try {
-			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
+//			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new BasicNameValuePair("auto_build", "1"));
+			content.add(new BasicNameValuePair("floor_id", floorID));
 			Document doc = connect("/connect/app/exploration/explore?cyt=1", content);
 //			String content = "&area_id=" + AES.encrypt(areaID, this.key12) + "&check=" + AES.encrypt("1", this.key12) + "&floor_id=" + AES.encrypt(floorID, this.key12);
 
@@ -682,7 +786,7 @@ public class NetworkController {
 	public NetworkController fairyselect() throws InterruptedException {
 		System.out.println("fairyselect");
 		try {
-			Document doc = connect("/connect/app/menu/fairyselect?cyt=1");
+			connect("/connect/app/menu/fairyselect?cyt=1");
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 //			String line;
@@ -768,8 +872,13 @@ public class NetworkController {
 	public NetworkController fairy_floor(String sid, String uid) {
 		System.out.println("fairy_floor");
 		try {
-			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
-			Document doc = connect("/connect/app/exploration/fairy_floor?cyt=1", content);
+//			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("check", "1"));
+			content.add(new BasicNameValuePair("serial_id", sid));
+			content.add(new BasicNameValuePair("user_id", uid));
+
+			connect("/connect/app/exploration/fairy_floor?cyt=1", content);
 
 //			synchronized (this) {
 //				state = StateEnum.FAIRYFLOOR;
@@ -797,7 +906,10 @@ public class NetworkController {
 		fairy_floor(sid, uid);
 		System.out.println("fairybattle, sid: " + sid + ", uid: " + uid);
 		try {
-			String content = "&serial_id=" + sid + "&user_id=" + uid;
+//			String content = "&serial_id=" + sid + "&user_id=" + uid;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
+			content.add(new BasicNameValuePair("serial_id", sid));
+			content.add(new BasicNameValuePair("user_id", uid));
 			Document doc = connect("/connect/app/exploration/fairybattle?cyt=1", content);
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -856,8 +968,13 @@ public class NetworkController {
 	public NetworkController fairy_lose(String sid, String uid) {
 		System.out.println("fairy_lose");
 		try {
-			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
-			Document doc = connect("/connect/app/exploration/fairy_lose?cyt=1", content);
+//			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("check", "1"));
+			content.add(new BasicNameValuePair("serial_id", sid));
+			content.add(new BasicNameValuePair("user_id", uid));
+
+			connect("/connect/app/exploration/fairy_lose?cyt=1", content);
 
 			Thread.sleep(1000);
 		}
@@ -878,7 +995,9 @@ public class NetworkController {
 	public NetworkController friendlist() {
 		System.out.println("friendlist");
 		try {
-			String content = "&move=1";
+//			String content = "&move=1";
+			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
+			content.add(new BasicNameValuePair("move", "1"));
 			Document doc = connect("/connect/app/menu/friendlist?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -915,7 +1034,9 @@ public class NetworkController {
 	public NetworkController friend_notice() {
 		System.out.println("friend_notice");
 		try {
-			String content = "&move=1";
+//			String content = "&move=1";
+			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
+			content.add(new BasicNameValuePair("move", "1"));
 			Document doc = connect("/connect/app/menu/friend_notice?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -953,7 +1074,10 @@ public class NetworkController {
 		System.out.println("remove_friend");
 		boolean success = false;
 		try {
-			String content = "&dialog=0&user_id=" + user_id;
+//			String content = "&dialog=0&user_id=" + user_id;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
+			content.add(new BasicNameValuePair("dialog", "0"));
+			content.add(new BasicNameValuePair("user_id", user_id));
 			Document doc = connect("/connect/app/friend/remove_friend?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -981,7 +1105,10 @@ public class NetworkController {
 		System.out.println("approve_friend");
 		boolean success = false;
 		try {
-			String content = "&dialog=0&user_id=" + user_id;
+//			String content = "&dialog=0&user_id=" + user_id;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
+			content.add(new BasicNameValuePair("dialog", "0"));
+			content.add(new BasicNameValuePair("user_id", user_id));
 			Document doc = connect("/connect/app/friend/approve_friend?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1105,7 +1232,9 @@ public class NetworkController {
 
 		System.out.println("[Auto]floor, areaID: " + areaID);
 		try {
-			String content = "&area_id=" + areaID;
+//			String content = "&area_id=" + areaID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
+			content.add(new BasicNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1135,7 +1264,9 @@ public class NetworkController {
 
 		System.out.println("[Auto]floor, areaID: " + areaID);
 		try {
-			String content = "&area_id=" + areaID;
+//			String content = "&area_id=" + areaID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
+			content.add(new BasicNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1169,8 +1300,13 @@ public class NetworkController {
 			return false;
 		}
 		try {
-			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
-			Document doc = connect("/connect/app/exploration/get_floor?cyt=1", content);
+//			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new BasicNameValuePair("check", "1"));
+			content.add(new BasicNameValuePair("floor_id", floorID));
+
+			connect("/connect/app/exploration/get_floor?cyt=1", content);
 
 			Thread.sleep(3000);
 		}
@@ -1195,7 +1331,11 @@ public class NetworkController {
 		}
 		String newFloorID = this.floorID;
 		try {
-			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
+//			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new BasicNameValuePair("auto_build", "1"));
+			content.add(new BasicNameValuePair("floor_id", floorID));
 			Document doc = connect("/connect/app/exploration/explore?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1355,7 +1495,11 @@ public class NetworkController {
 		System.out.println("[Auto]fairybattle, sid: " + sid + ", uid: " + uid);
 
 		try {
-			String content = "&serial_id=" + sid + "&user_id=" + uid;
+//			String content = "&serial_id=" + sid + "&user_id=" + uid;
+			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
+			content.add(new BasicNameValuePair("check", "1"));
+			content.add(new BasicNameValuePair("serial_id", sid));
+			content.add(new BasicNameValuePair("user_id", uid));
 			Document doc = connect("/connect/app/exploration/fairybattle?cyt=1", content);
 
 			if ( ! checkCode(doc)) {

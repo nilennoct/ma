@@ -19,16 +19,34 @@ public class LoginComposite extends Composite {
 
 	public LoginComposite(Composite parent) {
 		super(parent, SWT.NONE);
-		this.setLayout(new GridLayout(2, false));
+		GridLayout gridLayoutTwoColumn = new GridLayout(2, false);
+		this.setLayout(gridLayoutTwoColumn);
 
-		Label nameLabel = new Label(this, SWT.RIGHT);
-		final Text nameText = new Text(this, SWT.BORDER);
-		Label passwordLabel = new Label(this, SWT.RIGHT);
-		final Text passwordText = new Text(this, SWT.BORDER | SWT.PASSWORD);
+		GridData compositeGD = new GridData(GridData.FILL, GridData.FILL, true, true);
+//		compositeGD.verticalIndent = 0;
 
-		Button loginButton = new Button(this, SWT.PUSH);
-		checkLoginButton = new Button(this, SWT.CHECK);
-		final Text checkLoginText = new Text(this, SWT.BORDER);
+		Composite leftComposite = new Composite(this, SWT.NONE);
+		leftComposite.setLayout(gridLayoutTwoColumn);
+		leftComposite.setLayoutData(compositeGD);
+		Composite rightComposite = new Composite(this, SWT.NONE);
+		rightComposite.setLayout(gridLayoutTwoColumn);
+		rightComposite.setLayoutData(compositeGD);
+
+		Label nameLabel = new Label(leftComposite, SWT.RIGHT);
+		final Text nameText = new Text(leftComposite, SWT.BORDER);
+		Label passwordLabel = new Label(leftComposite, SWT.RIGHT);
+		final Text passwordText = new Text(leftComposite, SWT.BORDER | SWT.PASSWORD);
+
+		Button loginButton = new Button(leftComposite, SWT.PUSH);
+		checkLoginButton = new Button(leftComposite, SWT.CHECK);
+		final Text checkLoginText = new Text(leftComposite, SWT.BORDER);
+
+		Label proxyHostLabel = new Label(rightComposite, SWT.RIGHT);
+		final Text proxyHostText = new Text(rightComposite, SWT.BORDER);
+		Label proxyPortLabel = new Label(rightComposite, SWT.RIGHT);
+		final Text proxyPortText = new Text(rightComposite, SWT.BORDER);
+
+		final Button usingProxyButton = new Button(rightComposite, SWT.CHECK);
 
 		GridData textGD = new GridData(GridData.FILL, GridData.FILL, true, false);
 		GridData loginButtonGD = new GridData(GridData.FILL, GridData.FILL, false, false);
@@ -44,6 +62,13 @@ public class LoginComposite extends Composite {
 		checkLoginButton.setText("Check login status(s)");
 		checkLoginButton.setEnabled(false);
 		checkLoginText.setText("600");
+		proxyHostLabel.setText("Proxy Host: ");
+		proxyPortLabel.setText("Proxy Port: ");
+		proxyHostText.setText("127.0.0.1");
+		proxyHostText.setLayoutData(textGD);
+		proxyPortText.setText("8087");
+		proxyPortText.setLayoutData(textGD);
+		usingProxyButton.setText("Using Proxy");
 
 		loginButton.addListener(SWT.Selection, new Listener() {
 			@Override
@@ -74,6 +99,19 @@ public class LoginComposite extends Composite {
 				else {
 					NetworkController.loginThread.interrupt();
 				}
+			}
+		});
+
+		usingProxyButton.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				nc.usingProxy = usingProxyButton.getSelection();
+				if (nc.usingProxy) {
+					nc.proxyHost = proxyHostText.getText();
+					nc.proxyPort = Integer.parseInt(proxyPortText.getText());
+				}
+
+				nc.createHttpClient();
 			}
 		});
 
