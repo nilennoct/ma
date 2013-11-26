@@ -1,9 +1,14 @@
 package org.nilennoct.controller;
 
+import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,27 +17,9 @@ import javax.crypto.spec.SecretKeySpec;
  * Time: 下午10:46
  */
 public class AES {
-//	static String IV = "AAAAAAAAAAAAAAAA";
-	static String plaintext = "test text 123\0\0\0"; /*Note null padding*/
-	static String encryptionKey = "rBwj1MIAivVN222b";
-
-	public static void main(String [] args) {
+	public static void main(String args[]) {
 		try {
-
-			System.out.println("==Java==");
-			System.out.println("plain:   " + plaintext);
-
-			String cipher = encrypt(plaintext, encryptionKey);
-
-			System.out.print("cipher:  " + cipher);
-//			for (int i=0; i<cipher.length; i++)
-//				System.out.print(new Integer(cipher[i])+" ");
-//			System.out.println("");
-//
-//			String decrypted = decrypt(cipher, encryptionKey);
-//
-//			System.out.println("decrypt: " + decrypted);
-
+			System.out.println(new String(AES.decrypt(new BASE64Decoder().decodeBuffer("b292suvivo/PbussZsFlKA=="), NetworkController.baseKey)));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -43,13 +30,37 @@ public class AES {
 		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 		SecretKeySpec key = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES");
 		cipher.init(Cipher.ENCRYPT_MODE, key);
+
 		return new BASE64Encoder().encode(cipher.doFinal(bytes, 0, bytes.length)).replaceAll("=+", "");
 	}
 
-	public static String decrypt(byte[] cipherText, String encryptionKey) throws Exception{
+	public static byte[] decrypt(byte[] cipherText, String encryptionKey) throws Exception{
 		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 		SecretKeySpec key = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES");
 		cipher.init(Cipher.DECRYPT_MODE, key);
-		return new String(cipher.doFinal(cipherText),"UTF-8");
+
+//		System.out.println(new String(cipher.doFinal(cipherText),"UTF-8"));
+
+		return cipher.doFinal(cipherText);
+	}
+
+	public static byte[] getBytes(InputStream is) throws IOException {
+
+		int len;
+		int size = 1024;
+		byte[] buf;
+
+		if (is instanceof ByteArrayInputStream) {
+			size = is.available();
+			buf = new byte[size];
+			len = is.read(buf, 0, size);
+		} else {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			buf = new byte[size];
+			while ((len = is.read(buf, 0, size)) != -1)
+				bos.write(buf, 0, len);
+			buf = bos.toByteArray();
+		}
+		return buf;
 	}
 }

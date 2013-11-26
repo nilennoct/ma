@@ -14,6 +14,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static java.lang.Integer.parseInt;
+
 /**
  * Created with IntelliJ IDEA.
  * User: Neo
@@ -24,7 +26,7 @@ public class XMLParser {
 	public static Document parseXML(String xmlString) throws Exception{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.parse(new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
+		Document doc = db.parse(new ByteArrayInputStream(AES.decrypt(xmlString.getBytes("UTF-8"), NetworkController.baseKey)));
 		doc.normalize();
 
 		return doc;
@@ -33,7 +35,7 @@ public class XMLParser {
 	public static Document parseXML(InputStream in) throws Exception{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.parse(in);
+		Document doc = db.parse(new ByteArrayInputStream(AES.decrypt(AES.getBytes(in), NetworkController.baseKey)));
 		doc.normalize();
 
 		return doc;
@@ -74,8 +76,7 @@ public class XMLParser {
 	}
 
 	public static int getErrorCode(Document doc) {
-		int code =  Integer.parseInt(doc.getElementsByTagName("code").item(0).getTextContent());
-//		switch (code) {
+		//		switch (code) {
 //			case 1020:{
 //				code = 9000;
 //			}
@@ -83,7 +84,7 @@ public class XMLParser {
 //		Random random = new Random();
 //		if (random.nextInt(10) >= 7) code = 8000;
 
-		return code;
+		return parseInt(doc.getElementsByTagName("code").item(0).getTextContent());
 	}
 
 	public static UserInfo getUserInfo(Document doc) {
@@ -93,18 +94,17 @@ public class XMLParser {
 		userInfo.name = getNodeValue(user, "name");
 		userInfo.town_level = getNodeValue(user, "town_level");
 		user = doc.getElementsByTagName("ap").item(0);
-		userInfo.ap_current = Integer.parseInt(getNodeValue(user, "current"));
-		userInfo.ap_max = Integer.parseInt(getNodeValue(user, "max"));
+		userInfo.ap_current = parseInt(getNodeValue(user, "current"));
+		userInfo.ap_max = parseInt(getNodeValue(user, "max"));
 		user = doc.getElementsByTagName("bc").item(0);
-		userInfo.bc_current = Integer.parseInt(getNodeValue(user, "current"));
-		userInfo.bc_max = Integer.parseInt(getNodeValue(user, "max"));
+		userInfo.bc_current = parseInt(getNodeValue(user, "current"));
+		userInfo.bc_max = parseInt(getNodeValue(user, "max"));
 
 		return userInfo;
 	}
 
 	public static FriendInfo getFriendInfo(Element user) {
 		FriendInfo friendInfo = new FriendInfo();
-//		Node fairy = doc.getElementsByTagName("fairy").item(0);
 		friendInfo.id = getNodeValue(user, "id");
 		friendInfo.level = getNodeValue(user, "town_level");
 		friendInfo.last_login = getNodeValue(user, "last_login");

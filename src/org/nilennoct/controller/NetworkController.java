@@ -13,7 +13,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
@@ -21,10 +20,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.nilennoct.controller.thread.ExploreThread;
 import org.nilennoct.controller.thread.FairyThread;
 import org.nilennoct.controller.thread.LoginThread;
-import org.nilennoct.model.FairyEvent;
-import org.nilennoct.model.FairyInfo;
-import org.nilennoct.model.FriendInfo;
-import org.nilennoct.model.UserInfo;
+import org.nilennoct.model.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,18 +55,14 @@ public class NetworkController {
 	private String name = null;
 	private String password = null;
 
-//	String host = "game1-cbt.ma.sdo.com";
-	String hostport = "game.ma.mobimon.com.tw:10001";
-//	String host = "game.ma.mobimon.com.tw";
-//	int port = 10001;
+	private final String hostport = "game.ma.mobimon.com.tw:10001";
 //	private final String hostport = "game1-CBT.ma.sdo.com:10001";
-	private final String DefaultUserAgent = "Mi11ion/1.0.2 (iPad; iPad2,1; 6.1) ";
-//	String baseKey = "rBwj1MIAivVN222b";
+	private final String DefaultUserAgent = "Million/1.0.2 (iPad; iPad2,1; 6.1) ";
+//	private final String DefaultUserAgent = "Mi11ion/1.0.2 (iPad; iPad2,1; 6.1) ";
+	public static String baseKey = "rBwj1MIAivVN222b";
 //	String key12 = baseKey;
 //	String key0 = baseKey;
 
-//	private Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8087));
-	//	private Proxy proxy = null;
 	private HttpURLConnection connection = null;
 	private int connectionTimeout = 15000;
 	private int readTimeout = 30000;
@@ -85,7 +77,6 @@ public class NetworkController {
 	private ArrayList<BasicHeader> defaultHeaders = new ArrayList<BasicHeader>();
 	private CloseableHttpClient client = null;
 	private CookieStore cookieStore =  new BasicCookieStore();
-//	private HttpHost httpHost = new HttpHost(host, port);
 
 	public UserInfo userInfo;
 	private String areaID = "1";
@@ -112,10 +103,6 @@ public class NetworkController {
 	public static boolean offline = false;
 
 	private NetworkController() {
-//		System.setProperty("http.proxySet", "false");
-//		System.setProperty("http.proxyHost", "127.0.0.1");
-//		System.setProperty("http.proxyPort", "8087");
-
 		requestConfig = RequestConfig.custom()
 				.setConnectionRequestTimeout(connectionTimeout)
 				.setSocketTimeout(readTimeout)
@@ -149,7 +136,6 @@ public class NetworkController {
 				.setDefaultRequestConfig(requestConfig)
 				.setDefaultCookieStore(cookieStore)
 				.setDefaultHeaders(defaultHeaders)
-//				.setRoutePlanner(new SystemDefaultRoutePlanner(ProxySelector.getDefault()))
 				.build();
 	}
 
@@ -270,10 +256,10 @@ public class NetworkController {
 		return doc;
 	}
 
-	public synchronized Document connect(String urlPart, List<NameValuePair> parameter) throws Exception {
+	public synchronized Document connect(String urlPart, List<NameValuePair> parameters) throws Exception {
 		HttpPost method = new HttpPost("http://" + hostport + urlPart);
 
-		method.setEntity(new UrlEncodedFormEntity(parameter));
+		method.setEntity(new UrlEncodedFormEntity(parameters));
 
 		CloseableHttpResponse response = client.execute(method);
 
@@ -354,8 +340,8 @@ public class NetworkController {
 //			String content = "&login_id=" + AES.encrypt(this.name, key0) + "&password=" + AES.encrypt(this.password, key0);
 
 			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
-			content.add(new BasicNameValuePair("login_id", this.name));
-			content.add(new BasicNameValuePair("password", this.password));
+			content.add(new EncryptNameValuePair("login_id", this.name));
+			content.add(new EncryptNameValuePair("password", this.password));
 
 			Document doc = connect("/connect/app/login?cyt=1", content);
 
@@ -574,7 +560,7 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
-			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -632,9 +618,9 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("area_id", areaID));
-			content.add(new BasicNameValuePair("check", "1"));
-			content.add(new BasicNameValuePair("floor_id", floorID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("check", "1"));
+			content.add(new EncryptNameValuePair("floor_id", floorID));
 
 			connect("/connect/app/exploration/get_floor?cyt=1", content);
 
@@ -675,9 +661,9 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("area_id", areaID));
-			content.add(new BasicNameValuePair("auto_build", "1"));
-			content.add(new BasicNameValuePair("floor_id", floorID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("auto_build", "1"));
+			content.add(new EncryptNameValuePair("floor_id", floorID));
 			Document doc = connect("/connect/app/exploration/explore?cyt=1", content);
 //			String content = "&area_id=" + AES.encrypt(areaID, this.key12) + "&check=" + AES.encrypt("1", this.key12) + "&floor_id=" + AES.encrypt(floorID, this.key12);
 
@@ -874,9 +860,9 @@ public class NetworkController {
 		try {
 //			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("check", "1"));
-			content.add(new BasicNameValuePair("serial_id", sid));
-			content.add(new BasicNameValuePair("user_id", uid));
+			content.add(new EncryptNameValuePair("check", "1"));
+			content.add(new EncryptNameValuePair("serial_id", sid));
+			content.add(new EncryptNameValuePair("user_id", uid));
 
 			connect("/connect/app/exploration/fairy_floor?cyt=1", content);
 
@@ -908,8 +894,8 @@ public class NetworkController {
 		try {
 //			String content = "&serial_id=" + sid + "&user_id=" + uid;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
-			content.add(new BasicNameValuePair("serial_id", sid));
-			content.add(new BasicNameValuePair("user_id", uid));
+			content.add(new EncryptNameValuePair("serial_id", sid));
+			content.add(new EncryptNameValuePair("user_id", uid));
 			Document doc = connect("/connect/app/exploration/fairybattle?cyt=1", content);
 
 //			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -970,9 +956,9 @@ public class NetworkController {
 		try {
 //			String content = "&check=1&serial_id=" + sid + "&user_id=" + uid;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("check", "1"));
-			content.add(new BasicNameValuePair("serial_id", sid));
-			content.add(new BasicNameValuePair("user_id", uid));
+			content.add(new EncryptNameValuePair("check", "1"));
+			content.add(new EncryptNameValuePair("serial_id", sid));
+			content.add(new EncryptNameValuePair("user_id", uid));
 
 			connect("/connect/app/exploration/fairy_lose?cyt=1", content);
 
@@ -997,7 +983,7 @@ public class NetworkController {
 		try {
 //			String content = "&move=1";
 			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
-			content.add(new BasicNameValuePair("move", "1"));
+			content.add(new EncryptNameValuePair("move", "1"));
 			Document doc = connect("/connect/app/menu/friendlist?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1036,7 +1022,7 @@ public class NetworkController {
 		try {
 //			String content = "&move=1";
 			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
-			content.add(new BasicNameValuePair("move", "1"));
+			content.add(new EncryptNameValuePair("move", "1"));
 			Document doc = connect("/connect/app/menu/friend_notice?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1076,8 +1062,8 @@ public class NetworkController {
 		try {
 //			String content = "&dialog=0&user_id=" + user_id;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
-			content.add(new BasicNameValuePair("dialog", "0"));
-			content.add(new BasicNameValuePair("user_id", user_id));
+			content.add(new EncryptNameValuePair("dialog", "0"));
+			content.add(new EncryptNameValuePair("user_id", user_id));
 			Document doc = connect("/connect/app/friend/remove_friend?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1107,8 +1093,8 @@ public class NetworkController {
 		try {
 //			String content = "&dialog=0&user_id=" + user_id;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
-			content.add(new BasicNameValuePair("dialog", "0"));
-			content.add(new BasicNameValuePair("user_id", user_id));
+			content.add(new EncryptNameValuePair("dialog", "0"));
+			content.add(new EncryptNameValuePair("user_id", user_id));
 			Document doc = connect("/connect/app/friend/approve_friend?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1234,7 +1220,7 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
-			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1266,7 +1252,7 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(1);
-			content.add(new BasicNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
 			Document doc = connect("/connect/app/exploration/floor?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1302,9 +1288,9 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID + "&check=" + "1" + "&floor_id=" + floorID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("area_id", areaID));
-			content.add(new BasicNameValuePair("check", "1"));
-			content.add(new BasicNameValuePair("floor_id", floorID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("check", "1"));
+			content.add(new EncryptNameValuePair("floor_id", floorID));
 
 			connect("/connect/app/exploration/get_floor?cyt=1", content);
 
@@ -1333,9 +1319,9 @@ public class NetworkController {
 		try {
 //			String content = "&area_id=" + areaID + "&auto_build=" + "1" + "&floor_id=" + floorID;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("area_id", areaID));
-			content.add(new BasicNameValuePair("auto_build", "1"));
-			content.add(new BasicNameValuePair("floor_id", floorID));
+			content.add(new EncryptNameValuePair("area_id", areaID));
+			content.add(new EncryptNameValuePair("auto_build", "1"));
+			content.add(new EncryptNameValuePair("floor_id", floorID));
 			Document doc = connect("/connect/app/exploration/explore?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
@@ -1497,9 +1483,9 @@ public class NetworkController {
 		try {
 //			String content = "&serial_id=" + sid + "&user_id=" + uid;
 			List<NameValuePair> content = new ArrayList<NameValuePair>(3);
-			content.add(new BasicNameValuePair("check", "1"));
-			content.add(new BasicNameValuePair("serial_id", sid));
-			content.add(new BasicNameValuePair("user_id", uid));
+			content.add(new EncryptNameValuePair("check", "1"));
+			content.add(new EncryptNameValuePair("serial_id", sid));
+			content.add(new EncryptNameValuePair("user_id", uid));
 			Document doc = connect("/connect/app/exploration/fairybattle?cyt=1", content);
 
 			if ( ! checkCode(doc)) {
