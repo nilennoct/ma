@@ -34,9 +34,14 @@ public class ExploreThread extends Thread {
 	public void run() {
 //		Random random = new Random();
 		while (threadRunning) {
-			System.out.println("ExploreThread start");
-			nc.lastExploreTime = new Date().getTime();
 			try {
+				if (NetworkController.offline) {
+					this.interrupt();
+					this.join();
+				}
+
+				System.out.println("ExploreThread start");
+				nc.lastExploreTime = new Date().getTime();
 				while (NetworkController.state == StateEnum.AUTOFAIRY || NetworkController.state == StateEnum.FAIRYBATTLE) {
 //					System.out.println(NetworkController.state);
 					System.out.println("Wait for fairy");
@@ -88,6 +93,7 @@ public class ExploreThread extends Thread {
 				}
 			}
 			catch (InterruptedException e) {
+				System.out.println("> ExploreThread interrupted.");
 				if (NetworkController.offline) {
 					synchronized (nc) {
 						if (NetworkController.state == StateEnum.OVERFLOW) {

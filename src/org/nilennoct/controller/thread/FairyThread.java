@@ -24,6 +24,11 @@ public class FairyThread extends Thread {
 	public void run() {
 		while (running) {
 			try {
+				if (NetworkController.offline) {
+					this.interrupt();
+					this.join();
+				}
+
 				System.out.println("FairyThread start");
 				nc.lastFairyTime = new Date().getTime();
 
@@ -46,6 +51,7 @@ public class FairyThread extends Thread {
 				sleep(nc.fairyInterval);
 			}
 			catch (InterruptedException e) {
+				System.out.println("> FairyThread interrupted.");
 				if (NetworkController.offline) {
 					synchronized (nc) {
 						if (NetworkController.state == StateEnum.OVERFLOW) {

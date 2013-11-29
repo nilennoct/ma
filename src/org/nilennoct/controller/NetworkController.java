@@ -415,7 +415,7 @@ public class NetworkController {
 					break;
 				}
 				case 8000: {
-					if (msg.contains("超过上限")) {
+					if (msg.contains("已超過可持有")) {
 						setState(StateEnum.OVERFLOW);
 					}
 					break;
