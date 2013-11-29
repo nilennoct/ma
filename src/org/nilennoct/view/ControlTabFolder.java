@@ -19,10 +19,12 @@ class ControlTabFolder extends TabFolder {
 		TabItem fairyTabItem = new TabItem(this, SWT.NONE);
 		TabItem exploreTabItem = new TabItem(this, SWT.NONE);
 		TabItem friendTabItem = new TabItem(this, SWT.NONE);
+		TabItem inviteTabItem = new TabItem(this, SWT.NONE);
 		LoginComposite loginComposite = new LoginComposite(this);
 		FairyComposite fairyComposite = new FairyComposite(this);
 		ExploreComposite exploreComposite = new ExploreComposite(this);
 		FriendComposite friendComposite = new FriendComposite(this);
+		InviteComposite inviteComposite = new InviteComposite(this);
 
 		loginTabItem.setText("Login");
 		loginTabItem.setControl(loginComposite);
@@ -36,6 +38,9 @@ class ControlTabFolder extends TabFolder {
 		friendTabItem.setText("Friend");
 		friendTabItem.setControl(friendComposite);
 		UIController.getInstance().setFriendComposite(friendComposite);
+		inviteTabItem.setText("Invite");
+		inviteTabItem.setControl(inviteComposite);
+		UIController.getInstance().setInviteComposite(inviteComposite);
 	}
 
 	@Override

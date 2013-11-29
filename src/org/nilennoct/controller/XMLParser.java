@@ -23,6 +23,7 @@ import static java.lang.Integer.parseInt;
  * Time: 下午1:40
  */
 public class XMLParser {
+	@Deprecated
 	public static Document parseXML(String xmlString) throws Exception{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
@@ -35,10 +36,14 @@ public class XMLParser {
 	public static Document parseXML(InputStream in) throws Exception{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document doc = db.parse(new ByteArrayInputStream(AES.decrypt(AES.getBytes(in), NetworkController.baseKey)));
-		doc.normalize();
-
-		return doc;
+		InputStream xmlStream = new ByteArrayInputStream(AES.decrypt(AES.getBytes(in), NetworkController.baseKey));
+//		System.out.println(xmlStream.available());
+		if (xmlStream.available() > 0) {
+			Document doc = db.parse(xmlStream);
+			doc.normalize();
+			return doc;
+		}
+		return null;
 	}
 
 	public static Node getNode(Node pNode, String tagName) {

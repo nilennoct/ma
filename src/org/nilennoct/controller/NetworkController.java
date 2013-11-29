@@ -4,14 +4,12 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.*;
 import org.apache.http.message.BasicHeader;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -31,8 +29,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created with IntelliJ IDEA.
@@ -75,8 +75,9 @@ public class NetworkController {
 
 	private RequestConfig requestConfig;
 	private ArrayList<BasicHeader> defaultHeaders = new ArrayList<BasicHeader>();
-	private CloseableHttpClient client = null;
-	private CookieStore cookieStore =  new BasicCookieStore();
+	public CloseableHttpClient client = null;
+	public CookieStore cookieStore =  new BasicCookieStore();
+	private RedirectStrategy redirectStrategy = new LaxRedirectStrategy();
 
 	public UserInfo userInfo;
 	private String areaID = "1";
@@ -114,12 +115,13 @@ public class NetworkController {
 		defaultHeaders.add(new BasicHeader(HttpHeaders.CONNECTION, "keep-alive"));
 		defaultHeaders.add(new BasicHeader(HttpHeaders.USER_AGENT, DefaultUserAgent));
 
-		createHttpClient();
+		client = createHttpClient(cookieStore);
 
 	}
 
-	public void createHttpClient() {
-		System.out.println(usingProxy);
+	public CloseableHttpClient createHttpClient(CookieStore cookieStore) {
+		cookieStore.clear();
+
 		if (client != null) {
 			try {
 				client.close();
@@ -132,10 +134,12 @@ public class NetworkController {
 			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
 			builder = builder.setProxy(proxy);
 		}
-		client = builder
+
+		 return builder
 				.setDefaultRequestConfig(requestConfig)
 				.setDefaultCookieStore(cookieStore)
 				.setDefaultHeaders(defaultHeaders)
+				.setRedirectStrategy(redirectStrategy)
 				.build();
 	}
 
@@ -270,6 +274,31 @@ public class NetworkController {
 		return doc;
 	}
 
+	public synchronized Document connect(CloseableHttpClient client, String urlPart) throws Exception {
+		HttpPost method = new HttpPost("http://" + hostport + urlPart);
+		CloseableHttpResponse response = client.execute(method);
+
+		Document doc = XMLParser.parseXML(response.getEntity().getContent());
+
+		response.close();
+
+		return doc;
+	}
+
+	public synchronized Document connect(CloseableHttpClient client, String urlPart, List<NameValuePair> parameters) throws Exception {
+		HttpPost method = new HttpPost("http://" + hostport + urlPart);
+
+		method.setEntity(new UrlEncodedFormEntity(parameters));
+
+		CloseableHttpResponse response = client.execute(method);
+
+		Document doc = XMLParser.parseXML(response.getEntity().getContent());
+
+		response.close();
+
+		return doc;
+	}
+	@Deprecated
 	public synchronized Document connectOld(String urlPart, String parameter) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
@@ -301,8 +330,7 @@ public class NetworkController {
 		return doc;
 	}
 
-
-
+	@Deprecated
 	public synchronized Document connectOld(String urlPart) throws Exception {
 		URL url = new URL("http://" + hostport + urlPart);
 
@@ -381,7 +409,7 @@ public class NetworkController {
 		catch (SocketTimeoutException e) {
 			System.out.println(e);
 			synchronized (this) {
-				System.out.println(retryCount);
+				System.out.println("retryCount: " + retryCount);
 				if (retryCount < RetryLimit) {
 					++retryCount;
 					return login();
@@ -1531,6 +1559,120 @@ public class NetworkController {
 			if (tmpState != StateEnum.AUTOFAIRY && tmpState != StateEnum.FAIRYBATTLE) {
 				setState(tmpState);
 			}
+		}
+
+		return true;
+	}
+
+	public NetworkController register(String name, String password, String invitor, String session_id) {
+		HttpClientBuilder builder = HttpClients.custom();
+		if (usingProxy) {
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+			builder = builder.setProxy(proxy);
+		}
+
+		CookieStore cookieStore = new BasicCookieStore();
+		CloseableHttpClient client = builder
+				.setDefaultRequestConfig(requestConfig)
+				.setDefaultCookieStore(cookieStore)
+				.setDefaultHeaders(defaultHeaders)
+				.setRedirectStrategy(redirectStrategy)
+				.build();
+
+		try {
+			if (session_id.equals("")) {
+				session_id = regist(client, name, password, invitor);
+			}
+			System.out.println("session_id: " + session_id);
+			if (session_id != null) {
+				saveCharacter(client, name);
+				boolean success = false;
+				int count = 0;
+				while ( ! success && count < 3) {
+					++count;
+					nextTutorial(client, "1000", session_id);
+					nextTutorial(client, "7000", session_id);
+					success = nextTutorial(client, "8000", session_id);
+//					success = mainmenueFirstLogin(client);
+				}
+				if (success) {
+					uc.log("User \"" + name + "\" has been registered.");
+				}
+				else {
+					uc.log("User \"" + name + "\" failed to register.");
+				}
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return nc;
+	}
+
+	public String regist(CloseableHttpClient client, String name, String password, String invitor) throws Exception {
+		Random random = new SecureRandom();
+		String guid = (random.nextInt(899999) + 100000) + "d1c903cdb5d0aab2725b7803db" + (random.nextInt(899999) + 100000);
+
+		List<NameValuePair> parameters = new ArrayList<NameValuePair>(5);
+		parameters.add(new EncryptNameValuePair("login_id", name));
+		parameters.add(new EncryptNameValuePair("password", password));
+		parameters.add(new EncryptNameValuePair("invitation_id", invitor));
+		parameters.add(new EncryptNameValuePair("platform", "2"));
+		parameters.add(new EncryptNameValuePair("param", guid));
+		System.out.println("/connect/app/regist");
+		String session_id = null;
+		try {
+			Document doc = connect(client, "/connect/app/regist", parameters);
+
+			if ( ! checkCode(doc)) {
+				return session_id;
+			}
+
+			session_id = XMLParser.getNodeValue(doc, "session_id");
+		}
+		catch (SocketTimeoutException e) {
+			System.out.println(e);
+			return regist(client, name, password, invitor);
+		}
+
+		return session_id;
+	}
+
+	public boolean saveCharacter(CloseableHttpClient client, String name) throws Exception {
+		List<NameValuePair> parameters = new ArrayList<NameValuePair>(2);
+		parameters.add(new EncryptNameValuePair("name", name));
+		parameters.add(new EncryptNameValuePair("country", "1"));
+		System.out.println("/connect/app/tutorial/save_character");
+
+		try {
+			Document doc = connect(client, "/connect/app/tutorial/save_character", parameters);
+			if ( ! checkCode(doc)) {
+				return false;
+			}
+		}
+		catch (SocketTimeoutException e) {
+			System.out.println(e);
+			return saveCharacter(client, name);
+		}
+
+		return true;
+	}
+
+	public boolean nextTutorial(CloseableHttpClient client, String step, String session_id) throws Exception {
+		List<NameValuePair> parameters = new ArrayList<NameValuePair>(2);
+		parameters.add(new EncryptNameValuePair("step", step));
+		parameters.add(new EncryptNameValuePair("S", session_id));
+		System.out.println("/connect/app/tutorial/next/" + step);
+		try {
+			Document doc = connect(client, "/connect/app/tutorial/next", parameters);
+			if (doc != null && !checkCode(doc)) {
+				return false;
+			}
+		}
+		catch (SocketTimeoutException e) {
+			System.out.println(e);
+			return nextTutorial(client, step, session_id);
 		}
 
 		return true;

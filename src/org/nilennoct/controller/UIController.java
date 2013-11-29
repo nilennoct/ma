@@ -17,6 +17,7 @@ public class UIController {
 	private FairyComposite fairyComposite = null;
 	private ExploreComposite exploreComposite = null;
 	private FriendComposite friendComposite = null;
+	private InviteComposite inviteComposite = null;
 	private OutputComposite outputComposite = null;
 	private StatusComposite statusComposite = null;
 
@@ -66,6 +67,14 @@ public class UIController {
 
 	public void setFriendComposite(FriendComposite friendComposite) {
 		this.friendComposite = friendComposite;
+	}
+
+	public InviteComposite getInviteComposite() {
+		return inviteComposite;
+	}
+
+	public void setInviteComposite(InviteComposite inviteComposite) {
+		this.inviteComposite = inviteComposite;
 	}
 
 	public OutputComposite getOutputComposite() {

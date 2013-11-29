@@ -111,7 +111,7 @@ public class LoginComposite extends Composite {
 					nc.proxyPort = Integer.parseInt(proxyPortText.getText());
 				}
 
-				nc.createHttpClient();
+				nc.client = nc.createHttpClient(nc.cookieStore);
 			}
 		});
 
