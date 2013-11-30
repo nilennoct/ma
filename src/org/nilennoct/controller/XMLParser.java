@@ -98,6 +98,7 @@ public class XMLParser {
 
 		userInfo.name = getNodeValue(user, "name");
 		userInfo.town_level = getNodeValue(user, "town_level");
+		userInfo.free_ap_bc_point = parseInt(getNodeValue(user, "free_ap_bc_point"));
 		user = doc.getElementsByTagName("ap").item(0);
 		userInfo.ap_current = parseInt(getNodeValue(user, "current"));
 		userInfo.ap_max = parseInt(getNodeValue(user, "max"));

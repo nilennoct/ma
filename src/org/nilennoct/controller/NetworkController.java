@@ -1146,6 +1146,31 @@ public class NetworkController {
 		return success;
 	}
 
+	public boolean pointSetting(String ap, String bc) {
+		System.out.println("pointsetting");
+		try {
+			List<NameValuePair> content = new ArrayList<NameValuePair>(2);
+			content.add(new EncryptNameValuePair("ap", ap));
+			content.add(new EncryptNameValuePair("bc", bc));
+			Document doc = connect("/connect/app/town/pointsetting?cyt=1", content);
+
+			if ( ! checkCode(doc)) {
+				return false;
+			}
+
+			userInfo = XMLParser.getUserInfo(doc).updateAPBCMaxInThread().updateAPBCMax();
+			uc.log("AP & BC has been set.");
+		}
+		catch (SocketTimeoutException e) {
+			System.out.println(e);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return true;
+	}
+
 	public boolean mainmenuAuto() throws InterruptedException {
 		System.out.println("[Auto]mainmenu");
 		try {

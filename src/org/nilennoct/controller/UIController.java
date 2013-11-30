@@ -45,6 +45,10 @@ public class UIController {
 		});
 	}
 
+	public LoginComposite getLoginComposite() {
+		return loginComposite;
+	}
+
 	public FairyComposite getFairyComposite() {
 		return fairyComposite;
 	}

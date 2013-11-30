@@ -16,11 +16,14 @@ public class UserInfo {
 	public int ap_max;
 	public int bc_current;
 	public int bc_max;
+	public int free_ap_bc_point;
 
 	public UserInfo() {}
 
 	public UserInfo updateAPBC() {
-		UIController.getInstance().getStatusComposite().setAP(ap_current).setBC(bc_current);
+		UIController uc = UIController.getInstance();
+		uc.getStatusComposite().setAP(ap_current).setBC(bc_current);
+		uc.getLoginComposite().freeAPBCValue.setText(String.valueOf(free_ap_bc_point));
 
 		return this;
 	}
@@ -29,7 +32,9 @@ public class UserInfo {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				UIController.getInstance().getStatusComposite().setAP(ap_current).setBC(bc_current);
+				UIController uc = UIController.getInstance();
+				uc.getStatusComposite().setAP(ap_current).setBC(bc_current);
+				uc.getLoginComposite().freeAPBCValue.setText(String.valueOf(free_ap_bc_point));
 			}
 		});
 
@@ -37,7 +42,9 @@ public class UserInfo {
 	}
 
 	public UserInfo updateAPBCMax() {
-		UIController.getInstance().getStatusComposite().setAP(ap_current, ap_max).setBC(bc_current, bc_max);
+		UIController uc = UIController.getInstance();
+		uc.getStatusComposite().setAP(ap_current, ap_max).setBC(bc_current, bc_max);
+		uc.getLoginComposite().freeAPBCValue.setText(String.valueOf(free_ap_bc_point));
 
 		return this;
 	}
@@ -46,7 +53,9 @@ public class UserInfo {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				UIController.getInstance().getStatusComposite().setAP(ap_current, ap_max).setBC(bc_current, bc_max);
+				UIController uc = UIController.getInstance();
+				uc.getStatusComposite().setAP(ap_current, ap_max).setBC(bc_current, bc_max);
+				uc.getLoginComposite().freeAPBCValue.setText(String.valueOf(free_ap_bc_point));
 			}
 		});
 

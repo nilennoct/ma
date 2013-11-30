@@ -5,6 +5,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.nilennoct.controller.NetworkController;
+import org.nilennoct.controller.UIController;
 import org.nilennoct.controller.thread.LoginThread;
 
 /**
@@ -16,6 +17,7 @@ import org.nilennoct.controller.thread.LoginThread;
 public class LoginComposite extends Composite {
 	private final NetworkController nc = NetworkController.getInstance();
 	public Button checkLoginButton;
+	public Text freeAPBCValue;
 
 	public LoginComposite(Composite parent) {
 		super(parent, SWT.NONE);
@@ -36,17 +38,24 @@ public class LoginComposite extends Composite {
 		final Text nameText = new Text(leftComposite, SWT.BORDER);
 		Label passwordLabel = new Label(leftComposite, SWT.RIGHT);
 		final Text passwordText = new Text(leftComposite, SWT.BORDER | SWT.PASSWORD);
+		Label proxyHostLabel = new Label(leftComposite, SWT.RIGHT);
+		final Text proxyHostText = new Text(leftComposite, SWT.BORDER);
+		Label proxyPortLabel = new Label(leftComposite, SWT.RIGHT);
+		final Text proxyPortText = new Text(leftComposite, SWT.BORDER);
+
+		final Button usingProxyButton = new Button(leftComposite, SWT.CHECK);
 
 		Button loginButton = new Button(leftComposite, SWT.PUSH);
 		checkLoginButton = new Button(leftComposite, SWT.CHECK);
 		final Text checkLoginText = new Text(leftComposite, SWT.BORDER);
 
-		Label proxyHostLabel = new Label(rightComposite, SWT.RIGHT);
-		final Text proxyHostText = new Text(rightComposite, SWT.BORDER);
-		Label proxyPortLabel = new Label(rightComposite, SWT.RIGHT);
-		final Text proxyPortText = new Text(rightComposite, SWT.BORDER);
-
-		final Button usingProxyButton = new Button(rightComposite, SWT.CHECK);
+		Label freeAPBCLabel = new Label(rightComposite, SWT.RIGHT);
+		freeAPBCValue = new Text(rightComposite, SWT.BORDER | SWT.READ_ONLY);
+		Label APLabel = new Label(rightComposite, SWT.RIGHT);
+		final Text APText = new Text(rightComposite, SWT.BORDER);
+		Label BCLabel = new Label(rightComposite, SWT.RIGHT);
+		final Text BCText = new Text(rightComposite, SWT.BORDER);
+		Button updateButton = new Button(rightComposite, SWT.PUSH);
 
 		GridData textGD = new GridData(GridData.FILL, GridData.FILL, true, false);
 		GridData loginButtonGD = new GridData(GridData.FILL, GridData.FILL, false, false);
@@ -69,6 +78,17 @@ public class LoginComposite extends Composite {
 		proxyPortText.setText("8087");
 		proxyPortText.setLayoutData(textGD);
 		usingProxyButton.setText("Using Proxy");
+
+		freeAPBCLabel.setText("Free AP+BC: ");
+		freeAPBCValue.setText("0");
+		freeAPBCValue.setLayoutData(textGD);
+		APLabel.setText("Set free AP: ");
+		APText.setText("0");
+		APText.setLayoutData(textGD);
+		BCLabel.setText("Set free BC: ");
+		BCText.setText("0");
+		BCText.setLayoutData(textGD);
+		updateButton.setText("Update");
 
 		loginButton.addListener(SWT.Selection, new Listener() {
 			@Override
@@ -112,6 +132,23 @@ public class LoginComposite extends Composite {
 				}
 
 				nc.client = nc.createHttpClient(nc.cookieStore);
+			}
+		});
+
+		updateButton.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				String ap = APText.getText();
+				String bc = BCText.getText();
+				if (Integer.parseInt(ap) + Integer.parseInt(bc) <= Integer.parseInt(freeAPBCValue.getText())) {
+					if (nc.pointSetting(ap, bc)) {
+						APText.setText("0");
+						BCText.setText("0");
+					}
+				}
+				else {
+					UIController.getInstance().log("AP & BC value invalid.");
+				}
 			}
 		});
 
