@@ -2,7 +2,6 @@ package org.nilennoct.model;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.nilennoct.controller.AES;
-import org.nilennoct.controller.NetworkController;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,6 +11,6 @@ import org.nilennoct.controller.NetworkController;
  */
 public class EncryptNameValuePair extends BasicNameValuePair {
 	public EncryptNameValuePair(String name, String value) throws Exception {
-		super(name, AES.encrypt(value, NetworkController.baseKey));
+		super(name, AES.encrypt64(value));
 	}
 }

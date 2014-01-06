@@ -13,6 +13,7 @@ public class FairyEvent {
 	public String name;
 	public String put_down;
 	public String lv;
+	public String race_type;
 
 	public FairyEvent() {}
 }
